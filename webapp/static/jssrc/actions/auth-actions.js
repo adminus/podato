@@ -19,6 +19,7 @@ const AuthActions = mcfly.createActions({
         };
     },
     logout(){
+        heap.track("logout", {})
         API.users.logout({}, (res) => {
             if(res.obj.success){
                 api.logout();

@@ -12,6 +12,7 @@ const PodcastActions = mcfly.createActions({
         if(podcastIds.constructor !== Array){
             podcastIds = [podcastIds];
         }
+        heap.track("subscribe", {podcastIds: podcastIds.join(",")})
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.subscribe({userId: "me", podcast:podcastIds}, (resp) => {
@@ -29,6 +30,7 @@ const PodcastActions = mcfly.createActions({
         if(podcastIds.constructor !== Array){
             podcastIds = [podcastIds];
         }
+        heap.track("subscribe", {podcastIds: podcastIds.join(",")})
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.unsubscribe({userId: "me", podcast: podcastIds}, (resp) => {
