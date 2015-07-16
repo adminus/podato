@@ -2,6 +2,8 @@ from webapp.db import db, Model
 
 from mongoengine import Q
 
+from crawl_errors import CrawlError
+
 class Person(db.EmbeddedDocument):
     """Model that represents a person within a podcast feed."""
     name = db.StringField()
@@ -46,7 +48,7 @@ class Podcast(Model):
     complete = db.BooleanField()
     episodes = db.EmbeddedDocumentListField(Episode)
     subscribers = db.IntField(default=0)
-    errors = db.ListField(db.StringField(), default=[])
+    errors = db.EmbeddedDocumentListField(CrawlError, default=[])
 
     @classmethod
     def get_by_url(cls, url):
