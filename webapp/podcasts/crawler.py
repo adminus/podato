@@ -7,9 +7,11 @@ from eventlet.green import urllib2
 
 from webapp import utils
 from webapp.podcasts.models import  Podcast, Episode, Person, Enclosure
+from webapp.podcasts import crawl_errors
 from webapp.async import app, chord
 
 from mongoengine.base import fields
+
 
 PODATO_USER_AGENT = "Podato Crawler"
 
@@ -52,8 +54,9 @@ def _fetch_podcast_data(url):
         logging.info("fetching %s" % url)
         resp = opener.open(request)
         parsed = feedparser.parse(resp)
-    except urllib2.HTTPError as e:
-        raise FetchError(str(e))
+    except Exception as e:
+        logging.exception("Exception raised trying to fetch %s" % url)
+        return {"url": url,"errors": [crawl_errors.CrawlError(error_type=crawl_errors.UNKNOWN_ERROR, error=str(e))]}
     return _handle_feed(url, parsed, getattr(resp, "status", resp.getcode()))
 
 def _handle_feed(url, parsed, code):
@@ -61,17 +64,17 @@ def _handle_feed(url, parsed, code):
     previous_url = None
     logging.info("response_code: %s" % code)
     if code == 404:
-        raise FetchError("Podcast not found: %s" % (url))
+        return {"url": url, "errors": [crawl_errors.CrawlError(error_type=crawl_errors.NOT_FOUND)]}
     if code == 401:
-        raise FetchError("This podcast feed requires authentication.")
+        return {"url": url, "errors": [crawl_errors.CrawlError(error_type=crawl_errors.ACCESS_DENIED)]}
     elif code == 410:
-        raise FetchError("Podcast no longer available: %s" % (url))
+        return {"url": url, "errors": [crawl_errors.CrawlError(error_type=crawl_errors.GONE)]}
     elif code == 301: # Permanent redirect
         previous_url = url
     elif code == 304: # Not modified
-        return {}
+        return {"url": url}
     elif code not in [200, 302, 303, 307]:
-        raise FetchError("Got an unexpected response from podcast server: %v" % parsed.status)
+        return {"url": url, "errors": [crawl_errors.CrawlError(error_type=crawl_errors.UNKNOWN_ERROR, code=code)]}
 
     try:
         errors = []
@@ -83,17 +86,19 @@ def _handle_feed(url, parsed, code):
             if episode:
                 episodes.append(episode)
 
+        feed = parsed.feed
+        publisher = _get_or_errors(feed, "author_detail", errors, crawl_errors.NO_OWNER) or {}
         d = {
             "url": parsed.href,
-            "title": parsed.feed.title,
-            "author": parsed.feed.author,
-            "description": parsed.feed.description,
-            "language": parsed.feed.language,
+            "title": _get_or_errors(feed, "title", errors, crawl_errors.NO_TITLE),
+            "author": _get_or_errors(feed, "author", errors, crawl_errors.NO_AUTHOR),
+            "description": _get_or_errors(feed, "description", errors, crawl_errors.NO_DESCRIPTION),
+            "language": _get_or_errors(feed, "language", errors, crawl_errors.NO_LANGUAGE),
             "copyright": parsed.feed.get("rights"),
-            "image": parsed.feed.image.href,
-            "categories": [tag["term"] for tag in parsed.feed.tags],
-            "owner": Person(name=parsed.feed.publisher_detail.name,
-                            email=parsed.feed.publisher_detail.email),
+            "image": _get_or_errors(feed, "image", errors, crawl_errors.NO_IMAGE, default={"href":None})["href"],
+            "categories": [tag["term"] for tag in parsed.feed.get("tags", [{"term": ""}])],
+            "owner": Person(name=publisher.get("name"),
+                            email=publisher.get("email")),
             "last_fetched": datetime.datetime.now(),
             "complete": parsed.feed.get("itunes_complete") or False,
             "episodes": episodes,
@@ -111,13 +116,13 @@ def _make_episode(entry):
     """Crate an Episode object from the given feedparser item."""
     errors = []
     if not entry.get('enclosures'):
-         return None, ["Episode %s has no enclosure."]
+         return None, [crawl_errors.CrawlError(error_type=crawl_errors.NO_ENCLOSURE, episode=entry.get("id"))]
     try:
         episode = Episode(
-            title=entry.title,
-            subtitle=entry.subtitle,
+            title=_get_or_errors(entry, "title", errors, crawl_errors.NO_TITLE, episode=entry.get("id")),
+            subtitle=_get_or_errors(entry, "subtitle", errors, crawl_errors.NO_SUBTITLE, episode=entry.get("id")),
             description=_get_episode_description(entry),
-            author=entry.author,
+            author=_get_or_errors(entry, "author", errors, crawl_errors.NO_AUTHOR, episode=entry.get("id")),
             guid=entry.guid,
             published=datetime.datetime.fromtimestamp(
                 time.mktime(entry.published_parsed
@@ -127,15 +132,15 @@ def _make_episode(entry):
             explicit=_parse_explicit(entry),
             enclosure=Enclosure(type=entry.enclosures[0].get("type"),
                               url=entry.enclosures[0].href,
-                              length=int(entry.enclosures[0].length)
+                              length=_parse_int(entry.enclosures[0].get('length'))
             )
         )
         if episode.image is None:
             errors.append("No image for episode %s" % (episode.guid))
         return episode, errors
     except Exception as e:
-        logging.exception("Got an exception while parsing episode: %s." % entry.id)
-        return None, [str(e) + " episode: %s" % entry.id]
+        logging.exception("Got an exception while parsing episode: %s." % entry.get("id"))
+        return None, [crawl_errors.CrawlError(error_type=crawl_errors.UNKNOWN_ERROR, episode=entry.get("id"))]
 
 
 def _get_episode_description(entry):
@@ -150,17 +155,13 @@ def _get_episode_description(entry):
 def _parse_duration(entry, errors):
     """Parse an episode's duration into an integer representing the number of seconds."""
     try:
-        parts = entry.itunes_duration.split(":")
+        parts = _get_or_errors(entry, "itunes_duration", errors, crawl_errors.NO_DURATION, default="0").split(":")
         d = 0
         for i in xrange(min(len(parts), 3)):
-            d += int(parts[-(i+1)]) * 60**i
+            d += int(float(parts[-(i+1)])) * 60**i
     except ValueError:
-        logging.exception("Encountered an error while parsing duration %s, %s" % (entry.itunes_duration, entry.id))
-        errors.append("Could not parse episode duration: \"%s\", for episode %s." % (entry.itunes_duration, entry.id))
-        return 0
-    except AttributeError:
-        logging.exception("Encountered an error while parsing duration %s" % entry.id)
-        errors.append("Episode doesn't have an itunes:duration: %s" % entry.id)
+        logging.exception("Encountered an error while parsing duration %s, %s" % (entry.itunes_duration, entry.get("id")))
+        errors.append(crawl_errors.CrawlError(error_type=crawl_errors.MALFORMED_DURATION, episode=entry.get("id"), duration=entry.itunes_duration))
         return 0
     return d
 
@@ -174,6 +175,13 @@ def _parse_explicit(entry):
     else:
         return 0
 
+def _parse_int(i):
+    if not i:
+        return 0
+    if not isinstance(i, basestring):
+        return 0
+    return int("".join(c for c in "0" + i if c in "0123456789"))
+
 @app.task
 def _store_podcasts(podcasts_data):
     """Given a list of dictionaries representing podcasts, store them all in the database."""
@@ -184,3 +192,17 @@ def _store_podcasts(podcasts_data):
 def _subscribe_user(podcasts, user):
     """Subscribe the given users to all the podcasts in the list."""
     return user.subscribe_multi(podcasts)
+
+def _get_or_errors(d, key, errors, error_type, default=None, **error_props):
+    error = crawl_errors.CrawlError(error_type=error_type, **error_props)
+    try:
+        not_found = "COULD+NOT+ACCESS"
+        val = d.get(key, not_found)
+        if val == not_found:
+            errors.append(error)
+            return default
+    except:
+        errors.append(error)
+        logging.exception("Got an exception trying to get %s" % key)
+        return default
+    return val
