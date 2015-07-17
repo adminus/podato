@@ -4,6 +4,7 @@ import logging
 
 import feedparser
 from eventlet.green import urllib2
+from flask import current_app
 
 from webapp import utils
 from webapp.podcasts.models import  Podcast, Episode, Person, Enclosure
@@ -50,7 +51,7 @@ def _fetch_podcast_data(url):
     try:
         request = urllib2.Request(url)
         opener = urllib2.build_opener(SmartRedirectHandler)
-        request.add_header('User-Agent', PODATO_USER_AGENT)
+        request.add_header('User-Agent', current_app.config["USER_AGENT"])
         logging.info("fetching %s" % url)
         resp = opener.open(request)
         parsed = feedparser.parse(resp)
