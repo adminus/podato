@@ -12,6 +12,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
     primary_email = db.EmailField(required=False)
     email_addresses = db.ListField(db.EmailField())
     avatar_url = db.URLField()
+    following = db.ListField(db.ReferenceField("User"))
 
     @classmethod
     def create(cls, username, email, avatar_url=None):
@@ -28,3 +29,9 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
             avatar_url=avatar_url or "https://gravatar.com/avatar/%s" % email_hash
         )
         return instance
+
+    def follow(self, other_user):
+        self.modify(push__following=other_user)
+
+    def unfollow(self, other_user):
+        self.modify(pull_following=other_user)
