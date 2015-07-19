@@ -19,7 +19,7 @@ const Image = React.createClass({
         this.setSrc(newProps.src);
     },
     setSrc(src){
-        src = src || this.props.src;
+        src = src || this.props.src || "http://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?f=y&d=identicon";
         const width = this.refs.image.getDOMNode().offsetWidth;
         if(src.search("gravatar") >= 0){
             this.setState({src: src + "?s="+width + "&d=wavatar"});

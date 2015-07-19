@@ -6,11 +6,24 @@ from celery.signals import before_task_publish
 import logging
 
 app = Celery()
+def init_celery(podatoApp):
+    task_base = app.Task
 
-app.conf.CELERY_RESULT_BACKEND = podatoApp.config["REDIS_URL"]
-app.conf.BROKER_URL = podatoApp.config["REDIS_URL"]
-app.conf.CELERY_TRACK_STARTED = True
-app.conf.BROKER_POOL_LIMIT = 3
+    app.conf.CELERY_RESULT_BACKEND = podatoApp.config["REDIS_URL"]
+    app.conf.BROKER_URL = podatoApp.config["REDIS_URL"]
+    app.conf.CELERY_TRACK_STARTED = True
+    app.conf.BROKER_POOL_LIMIT = 3
+
+    class TaskWithAppContext(task_base):
+        """A celery task that has access to the Flask application context."""
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with podatoApp.app_context():
+                return task_base.__call__(self, *args, **kwargs)
+
+    app.Task = TaskWithAppContext
+
 
 @before_task_publish.connect
 def update_sent_state(sender=None, body=None, **kwargs):
