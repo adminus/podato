@@ -25,7 +25,7 @@ TIMEOUT = "E_TIMEOUT"
 
 
 
-class CrawlError(db.DynamicEmbeddedDocument):
+class CrawlError(db.EmbeddedDocument):
     error_type = db.StringField(choices=[
         NO_TITLE,
         NO_AUTHOR,
@@ -42,3 +42,8 @@ class CrawlError(db.DynamicEmbeddedDocument):
         TIMEOUT
     ], default=UNKNOWN_ERROR)
 
+    attrs = db.DictField()
+
+    @classmethod
+    def create(cls, attrs={}, **kwargs):
+        return cls(attrs=attrs, **kwargs)

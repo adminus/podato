@@ -48,7 +48,7 @@ class Podcast(Model):
     complete = db.BooleanField()
     episodes = db.EmbeddedDocumentListField(Episode)
     subscribers = db.IntField(default=0)
-    errors = db.EmbeddedDocumentListField(CrawlError, default=[])
+    errors = db.ListField(db.EmbeddedDocumentField(CrawlError), default=[])
 
     @classmethod
     def get_by_url(cls, url):

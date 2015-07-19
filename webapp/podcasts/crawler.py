@@ -57,7 +57,7 @@ def _fetch_podcast_data(url):
         parsed = feedparser.parse(resp)
     except Exception as e:
         logging.exception("Exception raised trying to fetch %s" % url)
-        return {"url": url,"errors": [crawl_errors.CrawlError(error_type=crawl_errors.UNKNOWN_ERROR, error=str(e))]}
+        return {"url": url,"errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.UNKNOWN_ERROR, attrs={"error": str(e)})]}
     return _handle_feed(url, parsed, getattr(resp, "status", resp.getcode()))
 
 def _handle_feed(url, parsed, code):
@@ -65,17 +65,17 @@ def _handle_feed(url, parsed, code):
     previous_url = None
     logging.info("response_code: %s" % code)
     if code == 404:
-        return {"url": url, "errors": [crawl_errors.CrawlError(error_type=crawl_errors.NOT_FOUND)]}
+        return {"url": url, "errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.NOT_FOUND)]}
     if code == 401:
-        return {"url": url, "errors": [crawl_errors.CrawlError(error_type=crawl_errors.ACCESS_DENIED)]}
+        return {"url": url, "errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.ACCESS_DENIED)]}
     elif code == 410:
-        return {"url": url, "errors": [crawl_errors.CrawlError(error_type=crawl_errors.GONE)]}
+        return {"url": url, "errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.GONE)]}
     elif code == 301: # Permanent redirect
         previous_url = url
     elif code == 304: # Not modified
         return {"url": url}
     elif code not in [200, 302, 303, 307]:
-        return {"url": url, "errors": [crawl_errors.CrawlError(error_type=crawl_errors.UNKNOWN_ERROR, code=code)]}
+        return {"url": url, "errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.UNKNOWN_ERROR, attrs={"code":code})]}
 
     try:
         errors = []
@@ -117,7 +117,7 @@ def _make_episode(entry):
     """Crate an Episode object from the given feedparser item."""
     errors = []
     if not entry.get('enclosures'):
-         return None, [crawl_errors.CrawlError(error_type=crawl_errors.NO_ENCLOSURE, episode=entry.get("id"))]
+         return None, [crawl_errors.CrawlError.create(error_type=crawl_errors.NO_ENCLOSURE, attrs={"episode": entry.get("id")})]
     try:
         episode = Episode(
             title=_get_or_errors(entry, "title", errors, crawl_errors.NO_TITLE, episode=entry.get("id")),
@@ -137,11 +137,11 @@ def _make_episode(entry):
             )
         )
         if episode.image is None:
-            errors.append("No image for episode %s" % (episode.guid))
+            errors.append(crawl_errors.CrawlError.create(error_type=crawl_errors.NO_IMAGE, attrs={"episode":entry.guid}))
         return episode, errors
     except Exception as e:
         logging.exception("Got an exception while parsing episode: %s." % entry.get("id"))
-        return None, [crawl_errors.CrawlError(error_type=crawl_errors.UNKNOWN_ERROR, episode=entry.get("id"))]
+        return None, [crawl_errors.CrawlError.create(error_type=crawl_errors.UNKNOWN_ERROR, attrs={"episode": entry.get("id")})]
 
 
 def _get_episode_description(entry):
@@ -159,10 +159,13 @@ def _parse_duration(entry, errors):
         parts = _get_or_errors(entry, "itunes_duration", errors, crawl_errors.NO_DURATION, default="0").split(":")
         d = 0
         for i in xrange(min(len(parts), 3)):
-            d += int(float(parts[-(i+1)])) * 60**i
+            if parts[-(i+1)].strip():
+                d += int(float(parts[-(i+1)])) * 60**i
+            else:
+                break
     except ValueError:
         logging.exception("Encountered an error while parsing duration %s, %s" % (entry.itunes_duration, entry.get("id")))
-        errors.append(crawl_errors.CrawlError(error_type=crawl_errors.MALFORMED_DURATION, episode=entry.get("id"), duration=entry.itunes_duration))
+        errors.append(crawl_errors.CrawlError.create(error_type=crawl_errors.MALFORMED_DURATION, attrs={"episode": entry.get("id"), "duration":entry.itunes_duration}))
         return 0
     return d
 
@@ -195,7 +198,7 @@ def _subscribe_user(podcasts, user):
     return user.subscribe_multi(podcasts)
 
 def _get_or_errors(d, key, errors, error_type, default=None, **error_props):
-    error = crawl_errors.CrawlError(error_type=error_type, **error_props)
+    error = crawl_errors.CrawlError.create(error_type=error_type, attrs=error_props)
     try:
         not_found = "COULD+NOT+ACCESS"
         val = d.get(key, not_found)
