@@ -12,6 +12,19 @@ app.conf.BROKER_URL = podatoApp.config["REDIS_URL"]
 app.conf.CELERY_TRACK_STARTED = True
 app.conf.BROKER_POOL_LIMIT = 3
 
+def make_app_context_task(flask_app):
+    task_base = app.Task
+    class TaskWithAppContext(task_base):
+        """A celery task that has access to the Flask application context."""
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with flask_app.app_context():
+                return task_base.__call__(*args, **kwargs)
+
+    app.Task = TaskWithAppContext
+
+
 @before_task_publish.connect
 def update_sent_state(sender=None, body=None, **kwargs):
     # the task may not exist if sent using `send_task` which
