@@ -73,6 +73,11 @@ class FollowingResource(Resource):
             req.user.unfollow(other)
             return {"success": True}
 
+    @api.marshal_with(user_fields, as_list=True)
+    @api.doc(id="subscribe")
+    def get(self, userId):
+        user = User.get_by_id(userId)
+        return user.following
 
 
 podcastsParser = api.parser()
