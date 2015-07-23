@@ -1,4 +1,5 @@
 import md5
+import datetime
 
 from webapp.db import db, Model
 
@@ -13,6 +14,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
     email_addresses = db.ListField(db.EmailField())
     avatar_url = db.URLField()
     following = db.ListField(db.ReferenceField("User"))
+    joined = db.DateTimeField(default=datetime.datetime.now)
 
     @classmethod
     def create(cls, username, email, avatar_url=None):
