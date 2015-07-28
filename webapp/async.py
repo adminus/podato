@@ -13,6 +13,7 @@ def init_celery(podatoApp):
     app.conf.BROKER_URL = podatoApp.config["REDIS_URL"]
     app.conf.CELERY_TRACK_STARTED = True
     app.conf.BROKER_POOL_LIMIT = 3
+    app.conf.CELERY_ALWAYS_EAGER = True # Make tasks execute locally until our Celery issue gets resolved: http://stackoverflow.com/questions/31543804/weird-error-with-redis-and-celery
 
     class TaskWithAppContext(task_base):
         """A celery task that has access to the Flask application context."""
