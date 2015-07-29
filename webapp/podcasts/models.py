@@ -13,7 +13,6 @@ class Person(db.EmbeddedDocument):
 class Enclosure(db.EmbeddedDocument):
     """Model that represents an enclosure (an episode's file.)"""
     url = db.URLField()
-    length = db.IntField()
     type = db.StringField()
 
 

@@ -132,8 +132,7 @@ def _make_episode(entry):
             duration=_parse_duration(entry, errors),
             explicit=_parse_explicit(entry),
             enclosure=Enclosure(type=entry.enclosures[0].get("type"),
-                              url=entry.enclosures[0].href,
-                              length=_parse_int(entry.enclosures[0].get('length'))
+                              url=entry.enclosures[0].href
             )
         )
         if episode.image is None:
@@ -178,13 +177,6 @@ def _parse_explicit(entry):
         return 2
     else:
         return 0
-
-def _parse_int(i):
-    if not i:
-        return 0
-    if not isinstance(i, basestring):
-        return 0
-    return int("".join(c for c in "0" + i if c in "0123456789"))
 
 @app.task
 def _store_podcasts(podcasts_data):
