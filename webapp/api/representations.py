@@ -51,7 +51,6 @@ class Explicit(fields.Raw):
         return ["undefined", "clean", "explicit"][value]
 
 enclosure_fields = api.model("enclosure", {
-        "length": fields.Integer,
         "type": fields.String,
         "url": fields.String
 })
