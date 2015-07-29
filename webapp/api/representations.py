@@ -18,7 +18,8 @@ success_status = api.model("success_status", {
 user_fields = api.extend("user", id_field, {
     "username": fields.String,
     "avatar_url": fields.String,
-    "email_address": fields.String(attribute="primary_email")
+    "email_address": fields.String(attribute="primary_email"),
+    "following": fields.List(fields.Nested(id_field))
 })
 
 subscribe_fields = api.model("subscribe", {

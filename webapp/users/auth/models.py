@@ -21,12 +21,17 @@ class ProviderTokenHolder(object):
     def add_provided_identity(self, provider, user_id, access_token):
         # If the user already has an identity from the given platform with the given id,
         # update its access_token
+        logging.debug("Adding provided identity to user. %r" % {
+            "provider": provider,
+            "user_id": user_id,
+            "app_user": self.id
+                                                               })
         for identity in self.provided_identities:
             if identity.provider == provider and identity.user_id == user_id:
                 identity.access_token = access_token
-                self.put
+                self.put()
+                logging.debug("identity already found on user. Updating access token.")
                 return
-
 
         prid = ProvidedIdentity(
             provider="facebook",
@@ -34,6 +39,7 @@ class ProviderTokenHolder(object):
             access_token=access_token
         )
         self.modify(push__provided_identities=prid)
+        logging.debug("Added provided identity.")
 
     def get_provider_token(self, provider, user_id=None):
         """Gets the access token for a specific provided identity."""
@@ -46,12 +52,20 @@ class ProviderTokenHolder(object):
     @classmethod
     def get_by_provided_identity(cls, provider, user_id):
         """Gets the User associated with the given provided identity."""
-        return cls.objects(provided_identities__provider=provider, provided_identities__user_id=user_id).first()
+        user = cls.objects(provided_identities__provider=provider, provided_identities__user_id=user_id).first()
+        logging.debug("Tried to get user by provided identity. %r" % {
+            "provider": provider,
+            "user_id": user_id,
+            "found": user
+        })
+        return user
 
     @classmethod
     def login(cls, provider, provider_response):
         """Get or create the user given the name of the auth provider, and the provider's response."""
+        logging.debug("login attempt with %s" % provider)
         if not hasattr(cls, "login_%s" % provider):
+            logging.debug("provider not found")
             abort(404)
         return getattr(cls, "login_%s" % provider)(provider_response)
 
@@ -60,23 +74,29 @@ class ProviderTokenHolder(object):
         """Gets or creates a user, based on the facebook_response."""
         try:
             access_token = facebook_response["access_token"]
+            logging.debug("Got access token from facebook.")
         except:
             raise ValueError("%s: %s\n%s" % (facebook_response.type, facebook_response.message, facebook_response.data))
         fb_user = facebook_api.get_current_user(access_token)
+        logging.debug("Got facebook user: %r" % fb_user)
         user = cls.get_by_provided_identity("facebook", fb_user["id"])
         if not user:
             user = cls.create(fb_user["name"], fb_user["email"], facebook_api.get_avatar(fb_user["id"]))
             user.put()
+            logging.debug("Saved new user.")
         user.add_provided_identity("facebook", fb_user["id"], access_token)
         return user
 
     @classmethod
     def login_twitter(cls, twitter_response):
         access_token = twitter_response.get("access_token")
+        logging.debug("Got twitter access token.")
         tw_user = TwitterProvider.api(access_token).me()
+        logging.debug("Got twitter user: %r" % tw_user)
         user = cls.get_by_provided_identity("twitter", tw_user.id_str)
         if not user:
             user = cls.create(tw_user.screen_name, None, tw_user.profile_image_url_https)
             user.put()
+            logging.debug("Saved new user.")
         user.add_provided_identity("twitter", tw_user.id_str, access_token)
         return user
