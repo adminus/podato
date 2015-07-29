@@ -48,7 +48,11 @@ class TwitterProvider(object):
         request_token = session["twitter_request_token"]
         del session["twitter_request_token"]
         auth = cls.make_auth(request_token=request_token)
-        auth.get_access_token(verifier)
+        try:
+            auth.get_access_token(verifier)
+        except tweepy.TweepError as e:
+            raise ValueError(e.reason)
+
         return {"access_token": cls.make_access_token(auth.access_token, auth.access_token_secret)}
 
     @classmethod

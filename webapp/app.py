@@ -14,6 +14,7 @@ from flask import redirect
 app = flask.Flask(__name__)
 app.config.from_object(settings)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.DEBUG)
 db.init_db(app)
 cache.init_cache(app)
 
