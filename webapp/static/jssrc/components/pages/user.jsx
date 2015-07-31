@@ -6,6 +6,7 @@ const AuthActions = require("../../actions/auth-actions");
 const CurrentUserStore = require("../../stores/current-user-store");
 
 const Image = require("../common/image.jsx");
+const Page = require("../common/page.jsx");
 const SubscriptionsGrid = require("../podcasts/subscriptions-grid.jsx")
 
 const User = React.createClass({
@@ -13,7 +14,7 @@ const User = React.createClass({
     contextTypes: {router: React.PropTypes.func},
     render(){
         return (
-            <div className="bg-white rounded p2 px4">
+            <Page>
                 <div className="clearfix mxn2">
                     <div className="sm-col-12 p2">
                         <h1>{this.state.user.username}</h1>
@@ -30,7 +31,7 @@ const User = React.createClass({
                         </div>
                     </div>
                 </div>
-            </div>
+            </Page>
         );
     },
     getInitialState(){

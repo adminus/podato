@@ -1,13 +1,13 @@
 const React = require("react");
 
-const SubscribeButton  = require("../podcasts/subscribe-button.jsx");
+const Page = require("../common/page.jsx");
+const Image = require("../common/image.jsx");
+const SubscribeButton = require("../podcasts/subscribe-button.jsx");
 
 const CurrentUserStore = require("../../stores/current-user-store");
 const PodcastsStore = require("../../stores/podcasts-store");
 
 const PodcastsActions = require("../../actions/podcast-actions");
-
-const Image = require("../common/image.jsx");
 
 const Podcast = React.createClass({
     mixins: [CurrentUserStore.mixin, PodcastsStore.mixin],
@@ -31,7 +31,7 @@ const Podcast = React.createClass({
             );
         });
         return (
-            <div className="bg-white rounded p2 px4">
+            <Page>
                 <div className="clearfix mxn2">
                     <div className="col col-3 p2 all-hide md-show">
                         <Image src={this.state.podcast.image} className="full-width" />
@@ -53,7 +53,7 @@ const Podcast = React.createClass({
                         <p className="gray">{this.state.podcast.copyright}</p>
                     </div>
                 </div>
-            </div>
+            </Page>
         );
     },
     getInitialState(){
