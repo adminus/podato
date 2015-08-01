@@ -13,23 +13,8 @@ const PodcastActions = require("../../actions/podcast-actions");
 const Home = React.createClass({
     mixins: [CurrentUserStore.mixin, PopularPodcastsStore.mixin, SubscriptionsStore.mixin],
     render(){
-        var auth = [
-            (<LoginButton authProvider="Facebook" className="m1" key="a1" />),
-            (<LoginButton authProvider="Twitter" className="m1" key="a2" />),
-            (<LoginButton authProvider="Google" className="m1" key="a3" />)
-        ];
-        if(this.state.authState === "progress") {
-            auth = (<img src="/img/loading_bar.gif" />)
-        }
-        if(this.state.authState === "done") {
-            auth = (<a>Get started</a>);
-            var subscriptions = [
-                <h3 key="heading">Subscriptions</h3>,
-                <ImportButton/>,
-                <PodcastGrid podcasts={this.state.userSubscriptions} className="sm-col sm-col-12" key="grid" />,
-                <hr key="hr" />
-                ]
-        }
+        var auth = this.getAuthButtons();
+        var subscriptions = this.getSubscriptionsGrid();
 
         return (
             <Page>
@@ -48,6 +33,31 @@ const Home = React.createClass({
                 <hr />
             </Page>
         );
+    },
+    getAuthButtons(){
+        var auth = [
+            (<LoginButton authProvider="Facebook" className="m1" key="a1" />),
+            (<LoginButton authProvider="Twitter" className="m1" key="a2" />),
+            (<LoginButton authProvider="Google" className="m1" key="a3" />)
+        ];
+
+        if(this.state.authState === "progress") {
+            auth = (<img src="/img/loading_bar.gif" />)
+        }
+        if(this.state.authState === "done") {
+            auth = (<a>Get started</a>);
+        }
+        return auth
+    },
+    getSubscriptionsGrid(){
+        if(this.state.authState === "done") {
+            return [
+                <h3 key="heading">Subscriptions</h3>,
+                <ImportButton/>,
+                <PodcastGrid podcasts={this.state.userSubscriptions} className="sm-col sm-col-12" key="grid" />,
+                <hr key="hr" />
+            ]
+        }
     },
     componentWillMount() {
         PodcastActions.fetchPopularPodcasts();
