@@ -3,6 +3,7 @@ const React = require("react");
 const Page = require("../common/page.jsx");
 const Image = require("../common/image.jsx");
 const SubscribeButton = require("../podcasts/subscribe-button.jsx");
+const Episode = require("../podcasts/episode.jsx");
 
 const CurrentUserStore = require("../../stores/current-user-store");
 const PodcastsStore = require("../../stores/podcasts-store");
@@ -13,23 +14,7 @@ const Podcast = React.createClass({
     mixins: [CurrentUserStore.mixin, PodcastsStore.mixin],
     contextTypes: {router: React.PropTypes.func},
     render(){
-        var episodes = this.state.podcast.episodes.map((e) => {
-            var published = new Date(e.published);
-            return (
-                <div className="clearfix mxn1 py2 border-bottom border-silver" key={e.guid}>
-                    <div className="col col-2 px1">
-                        <Image src={e.image || this.state.podcast.image} className="full-width" />
-                    </div>
-                    <div className="col col-10 px1 lh1">
-                        <span className="h5 bold">{e.title}</span>
-                        <span className="silver inline-block">
-                            <i className="ml1 el el-calendar" aria-label="published:"/>
-                            <date dateTime={published.toISOString()}>{published.toLocaleDateString()}</date> <i className="ml1 el el-time" aria-label="duration:" /> {e.duration}</span><br/>
-                        <span>{e.subtitle}</span>
-                    </div>
-                </div>
-            );
-        });
+        episodes = this.getEpisodes();
         return (
             <Page>
                 <div className="clearfix mxn2">
@@ -55,6 +40,11 @@ const Podcast = React.createClass({
                 </div>
             </Page>
         );
+    },
+    getEpisodes(){
+        return this.state.podcast.episodes.map((e) => {
+            return (<Episode episode={e} podcast={this.state.podcast} />);
+        });
     },
     getInitialState(){
         return {currentUser: CurrentUserStore.getCurrentUser(), podcast:{
