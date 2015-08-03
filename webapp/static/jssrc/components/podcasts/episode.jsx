@@ -1,10 +1,16 @@
 const React = require("react");
+const Image = require("../common/image.jsx");
 
 var Episode = React.createClass({
+    componentWillReceiveProps(p){
+        console.log("props:");
+        console.log(p);
+    },
     render(){
+        console.log("render called...");
         var published = new Date(this.props.episode.published);
         return (
-            <div className="clearfix mxn1 py2 border-bottom border-silver" key={e.guid}>
+            <div className="clearfix mxn1 py2 border-bottom border-silver">
                 <div className="col col-2 px1">
                 <Image src={this.props.episode.image || this.props.podcast.image} className="full-width" />
                 </div>

@@ -42,9 +42,11 @@ const Podcast = React.createClass({
         );
     },
     getEpisodes(){
-        return this.state.podcast.episodes.map((e) => {
+        var eps = this.state.podcast.episodes.map((e) => {
             return (<Episode episode={e} podcast={this.state.podcast} />);
         });
+        console.log(eps);
+        return eps;
     },
     getInitialState(){
         return {currentUser: CurrentUserStore.getCurrentUser(), podcast:{
