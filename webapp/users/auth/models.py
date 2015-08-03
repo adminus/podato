@@ -100,3 +100,11 @@ class ProviderTokenHolder(object):
             logging.debug("Saved new user.")
         user.add_provided_identity("twitter", tw_user.id_str, access_token)
         return user
+
+    @classmethod
+    def login_google(cls, google_response):
+        try:
+            access_token = google_response["access_token"]
+        except:
+            raise ValueError("%s: %s\n%s" % (google_response.type, google_response.message, google_response.data))
+        raise ValueError("response: %s" % google_response)

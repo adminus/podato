@@ -6,7 +6,6 @@ import cache
 import flask
 import flask_restful
 
-
 from config import settings
 from flask import request
 from flask import redirect
