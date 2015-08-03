@@ -14,7 +14,7 @@ const Podcast = React.createClass({
     mixins: [CurrentUserStore.mixin, PodcastsStore.mixin],
     contextTypes: {router: React.PropTypes.func},
     render(){
-        episodes = this.getEpisodes();
+        var episodes = this.getEpisodes();
         return (
             <Page>
                 <div className="clearfix mxn2">

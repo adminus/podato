@@ -31,7 +31,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         emails = []
         if email:
             email_hash = md5.md5(email).hexdigest()
-            emails = [emails]
+            emails = [email]
         instance = cls(
             username=utils.strip_control_chars(username),
             primary_email=email,
