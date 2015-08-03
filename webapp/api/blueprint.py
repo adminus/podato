@@ -5,6 +5,12 @@ from flask_restplus import Api
 
 api_blueprint = Blueprint("api", __name__, url_prefix="/api")
 
+errors = {
+    "AuthorizationRequired": {
+        "message": "This operation requires authorization",
+        "status": "401"
+    }
+}
 
 authorize_url ="%s://%s/api/oauth/authorize" % (current_app.config.get("DEFAULT_PROTOCOL"), current_app.config.get("SERVER_NAME"))
 token_url = "%s://%s/api/oauth/token" % (current_app.config.get("DEFAULT_PROTOCOL"), current_app.config.get("SERVER_NAME"))
