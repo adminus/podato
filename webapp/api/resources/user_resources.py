@@ -57,8 +57,8 @@ class FollowingResource(Resource):
             if not valid:
                 raise AuthorizationRequired()
             user = req.user
-            other = User.get_by_id(follow)
-            user.follow(other)
+            others = [User.get_by_id(f) for f in follow]
+            user.follow(others)
             return {"success": True}
 
     @api.marshal_with(success_status)
@@ -68,8 +68,8 @@ class FollowingResource(Resource):
             valid, req = auth.verify_request([])
             if not valid:
                 raise AuthorizationRequired()
-            unfollow = followParser.parse_args()["other_user"]
-            other = User.get_by_id(unfollow)
+            unfollow = followParser.parse_args()["other_user"].split(",")
+            others = [User.get_by_id(u) for u in unfollow]
             req.user.unfollow(other)
             return {"success": True}
 
