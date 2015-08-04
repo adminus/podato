@@ -49,7 +49,7 @@ followParser.add_argument(name="other_user", required=True, location="values")
 @api.doc({"userId": "A user ID, or \"me\" without quotes, for the user associated with the provided access token."})
 class FollowingResource(Resource):
     @api.marshal_with(success_status)
-    @api.doc(id="subscribe", security=[{"javascript":[]}, {"server":[]}], parser=followParser)
+    @api.doc(id="follow", security=[{"javascript":[]}, {"server":[]}], parser=followParser)
     def post(self, userId):
         if userId == "me":
             valid, req = auth.verify_request([])
@@ -62,7 +62,7 @@ class FollowingResource(Resource):
             return {"success": True}
 
     @api.marshal_with(success_status)
-    @api.doc(id="subscribe", security=[{"javascript":[]}, {"server":[]}], parser=followParser)
+    @api.doc(id="unfollow", security=[{"javascript":[]}, {"server":[]}], parser=followParser)
     def delete(self, userId):
         if userId == "me":
             valid, req = auth.verify_request([])
@@ -74,7 +74,7 @@ class FollowingResource(Resource):
             return {"success": True}
 
     @api.marshal_with(user_fields, as_list=True)
-    @api.doc(id="subscribe")
+    @api.doc(id="getFollowing")
     def get(self, userId):
         user = User.get_by_id(userId)
         return user.following
