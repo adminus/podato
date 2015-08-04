@@ -49,7 +49,7 @@ class TwitterProvider(object):
         try:
             auth.get_access_token(verifier)
         except tweepy.TweepError as e:
-            raise ValueError(e.reason)
+            raise ValueError("%s - %s\n\n%s" % (e.reason, e.message, e.response))
 
         return {"access_token": cls.make_access_token(auth.access_token, auth.access_token_secret)}
 

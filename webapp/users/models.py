@@ -1,6 +1,6 @@
 import md5
 import datetime
-
+import random
 import logging
 
 from webapp.db import db, Model
@@ -32,6 +32,9 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         if email:
             email_hash = md5.md5(email).hexdigest()
             emails = [email]
+        while not cls.is_username_available(username):
+            username += random.choice("1234567890")
+
         instance = cls(
             username=utils.strip_control_chars(username),
             primary_email=email,
@@ -39,6 +42,10 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
             avatar_url=avatar_url or "https://gravatar.com/avatar/%s" % email_hash
         )
         return instance
+
+    @classmethod
+    def is_username_available(cls, username):
+        return cls.objects(username=username).count() == 0
 
     def follow(self, other_user):
         self.modify(push__following=other_user)
