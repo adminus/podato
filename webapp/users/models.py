@@ -47,8 +47,12 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
     def is_username_available(cls, username):
         return cls.objects(username=username).count() == 0
 
-    def follow(self, other_user):
-        self.modify(push__following=other_user)
+    def follow(self, other_users):
+        if not isinstance(other_users, list):
+            other_users = [other_users]
+        self.modify(push_all__following=other_users)
 
-    def unfollow(self, other_user):
-        self.modify(pull_following=other_user)
+    def unfollow(self, other_users):
+        if not isinstance(other_users, list):
+            other_users = [other_users]
+        self.modify(pull_all__following=other_users)
