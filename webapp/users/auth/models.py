@@ -34,7 +34,7 @@ class ProviderTokenHolder(object):
                 return
 
         prid = ProvidedIdentity(
-            provider="facebook",
+            provider=provider,
             user_id=user_id,
             access_token=access_token
         )
