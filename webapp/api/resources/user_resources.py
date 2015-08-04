@@ -43,7 +43,7 @@ class UserResource(Resource):
         return user
 
 followParser = api.parser()
-followParser.add_argument(name="other_user", required=True, location="values")
+followParser.add_argument(name="otherUser", required=True, location="values")
 
 @ns.route("/<string:userId>/following", endpoint="following")
 @api.doc({"userId": "A user ID, or \"me\" without quotes, for the user associated with the provided access token."})
@@ -53,7 +53,7 @@ class FollowingResource(Resource):
     def post(self, userId):
         if userId == "me":
             valid, req = auth.verify_request([])
-            follow = followParser.parse_args()["other_user"].split(",")
+            follow = followParser.parse_args()["otherUser"].split(",")
             if not valid:
                 raise AuthorizationRequired()
             user = req.user
@@ -68,7 +68,7 @@ class FollowingResource(Resource):
             valid, req = auth.verify_request([])
             if not valid:
                 raise AuthorizationRequired()
-            unfollow = followParser.parse_args()["other_user"].split(",")
+            unfollow = followParser.parse_args()["otherUser"].split(",")
             others = [User.get_by_id(u) for u in unfollow]
             req.user.unfollow(other)
             return {"success": True}
