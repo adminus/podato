@@ -13,6 +13,8 @@ module.exports = {
         FETCHING_SUBSCRIPTIONS: null,
         SUBSCRIBED: null,
         UNSUBSCRIBED: null,
-        USER_FETCHED: null
+        USER_FETCHED: null,
+        FOLLOWED: null,
+        UNFOLLOWED: null,
     })
 }

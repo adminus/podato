@@ -8,6 +8,7 @@ const CurrentUserStore = require("../../stores/current-user-store");
 const Image = require("../common/image.jsx");
 const Page = require("../common/page.jsx");
 const SubscriptionsGrid = require("../podcasts/subscriptions-grid.jsx")
+const FollowButton = require("../auth/follow-button.jsx")
 
 const User = React.createClass({
     mixins: [Navigation, UsersStore.mixin],
@@ -23,6 +24,7 @@ const User = React.createClass({
                 <div className="clearfix mxn2">
                     <div className="sm-col sm-col-1 md-col-3 p2">
                         <Image src={this.state.user.avatar_url} className="full-width" />
+                        <p><FollowButton user={this.state.user}/></p>
                     </div>
                     <div className="sm-col sm-col-11 md-col md-col-9 p2">
                         <h2>Subscriptions</h2>

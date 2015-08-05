@@ -22,6 +22,22 @@ const CurrentUserStore = mcfly.createStore({
         case constants.actionTypes.LOGIN_CANCELLED:
             loggingIn = false;
             break;
+        case constants.actionTypes.FOLLOWED:
+            var currentUser = CurrentUserStore.getCurrentUser();
+            currentUser.following.concat(data.userIds);
+            localStorage.currentUser = JSON.stringify(currentUser);
+            break;
+        case constants.actionTypes.UNFOLLOWED:
+            var currentUser = CurrentUserStore.getCurrentUser();
+            for(var i=0; i<data.userIds.length; i++){
+                var id = data.userIds[i];
+                var index = currentUser.following.indexOf(id);
+                if(index >= 0){
+                    currentUser.following.splice(index, 1)
+                }
+            }
+            localStorage.currentUser = JSON.stringify(currentUser);
+            break;
         default:
             return
     }
