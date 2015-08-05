@@ -52,7 +52,7 @@ class FollowingResource(Resource):
     @api.doc(id="follow", security=[{"javascript":[]}, {"server":[]}], parser=followParser)
     def post(self, userId):
         if userId == "me":
-            valid, req = auth.verify_request([])
+            valid, req = oauth.verify_request([])
             follow = followParser.parse_args()["otherUser"].split(",")
             if not valid:
                 raise AuthorizationRequired()
@@ -65,7 +65,7 @@ class FollowingResource(Resource):
     @api.doc(id="unfollow", security=[{"javascript":[]}, {"server":[]}], parser=followParser)
     def delete(self, userId):
         if userId == "me":
-            valid, req = auth.verify_request([])
+            valid, req = oauth.verify_request([])
             if not valid:
                 raise AuthorizationRequired()
             unfollow = followParser.parse_args()["otherUser"].split(",")
