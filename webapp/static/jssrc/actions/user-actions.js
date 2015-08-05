@@ -12,11 +12,9 @@ const UserActions = mcfly.createActions({
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.follow({userId: "me", otherUser:userIds}, (resp) => {
-                    API.asyncResultToPromise(resp).then((result) => {
-                        resolve({
-                            actionType: constants.actionTypes.FOLLOWED,
-                            userIds: userIds
-                        });
+                    resolve({
+                        actionType: constants.actionTypes.FOLLOWED,
+                        userIds: userIds
                     });
                 });
             });
@@ -30,11 +28,9 @@ const UserActions = mcfly.createActions({
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.unfollow({userId: "me", otherUser: userIds}, (resp) => {
-                    API.asyncResultToPromise(resp).then((res) => {
-                        resolve({
-                            actionType: constants.actionTypes.UNFOLLOWED,
-                            userIds: userIds
-                        });
+                    resolve({
+                        actionType: constants.actionTypes.UNFOLLOWED,
+                        userIds: userIds
                     });
                 });
             });

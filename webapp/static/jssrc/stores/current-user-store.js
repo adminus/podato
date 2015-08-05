@@ -5,7 +5,16 @@ var loggingIn = false;
 
 const CurrentUserStore = mcfly.createStore({
     getLoggingIn(){return loggingIn},
-    getCurrentUser(){return JSON.parse(localStorage.currentUser)}
+    getCurrentUser(){return JSON.parse(localStorage.currentUser)},
+    isFollowing(otherId){
+        var user = CurrentUserStore.getCurrentUser();
+        for(var i=0; i<user.following.length; i++){
+            if(user.following[i].id == otherId){
+                return true;
+            }
+        }
+        return false;
+    }
 }, function(data){
     switch(data.actionType){
         case constants.actionTypes.LOGGING_IN:
@@ -24,16 +33,20 @@ const CurrentUserStore = mcfly.createStore({
             break;
         case constants.actionTypes.FOLLOWED:
             var currentUser = CurrentUserStore.getCurrentUser();
-            currentUser.following.concat(data.userIds);
+            var idObjects = [];
+            for(var i=0; i<data.userIds.length; i++){
+                idObjects.push({id: data.userIds[i]})
+            }
+            Array.prototype.push.apply(currentUser.following, idObjects);
             localStorage.currentUser = JSON.stringify(currentUser);
             break;
         case constants.actionTypes.UNFOLLOWED:
             var currentUser = CurrentUserStore.getCurrentUser();
             for(var i=0; i<data.userIds.length; i++){
-                var id = data.userIds[i];
-                var index = currentUser.following.indexOf(id);
-                if(index >= 0){
-                    currentUser.following.splice(index, 1)
+                for(var j=0; j<currentUser.following.length; j++){
+                    if(currentUser.following[j].id == data.userIds[i]){
+                        currentUser.following.splice(j, 1)
+                    }
                 }
             }
             localStorage.currentUser = JSON.stringify(currentUser);

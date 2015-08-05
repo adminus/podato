@@ -23,23 +23,23 @@ const FollowButton = React.createClass({
 
     },
     makeState(){
-        var user = CurrentUserStore.getCurrentUser();
-        return {
-            user: user,
-            isFollowing: user.following.indexOf(this.props.user.id) >= 0
+        var state = {
+            user: CurrentUserStore.getCurrentUser(),
+            isFollowing: CurrentUserStore.isFollowing(this.props.user.id)
         }
+        return state
     },
     getInitialState(){
         return this.makeState();
     },
     follow(e){
         e.preventDefault();
-        UserActions.follow(this.props.user);
+        UserActions.follow(this.props.user.id);
         this.setState({disabled: true})
     },
     unfollow(e){
         e.preventDefault();
-        UserActions.unfollow([this.props.user]);
+        UserActions.unfollow([this.props.user.id]);
         this.setState({disabled: true})
     },
     storeDidChange(){

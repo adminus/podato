@@ -70,7 +70,7 @@ class FollowingResource(Resource):
                 raise AuthorizationRequired()
             unfollow = followParser.parse_args()["otherUser"].split(",")
             others = [User.get_by_id(u) for u in unfollow]
-            req.user.unfollow(other)
+            req.user.unfollow(others)
             return {"success": True}
 
     @api.marshal_with(user_fields, as_list=True)
