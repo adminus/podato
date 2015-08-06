@@ -65,3 +65,6 @@ webapp/static/js/**/*
 
 #ignore environment variable file
 .env
+
+#rethinkdb
+rethinkdb_data
