@@ -24,7 +24,7 @@ def authorize(*args, **kwargs):
         client = clients.Client.get_by_id(client_id)
         kwargs['client'] = client
 
-        if client.app.trusted == True:
+        if client.get_app().trusted == True:
             return True #we don't ask the user for permissions for our own "trusted" app.
 
         return render_template('oauthorize.html', **kwargs)

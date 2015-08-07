@@ -27,15 +27,16 @@ def load_grant(client_id, code):
 def save_grant(client_id, code, request, *args, **kwargs):
     grant = tokens.GrantToken.create(client_id, code["code"], session.get_user(),
                                      request.redirect_uri, request.scopes)
+    grant.save()
     return grant
 
 
 @oauth.tokengetter
 def load_token(access_token=None, refresh_token=None):
     if access_token:
-        return tokens.BearerToken.objects(access_token=access_token).first()
+        return tokens.BearerToken.get_by_access_token(access_token=access_token)
     else:
-        return tokens.BearerToken.objects(refresh_token=refresh_token).first()
+        return tokens.BearerToken.get_by_refresh_token(refresh_token=refresh_token)
 
 
 @oauth.tokensetter
@@ -48,7 +49,7 @@ def save_token(token, request):
         expires_in=token["expires_in"],
         scopes=token["scope"].split(),
         token_type=token["token_type"]
-    ).put()
+    ).save()
 
 
 @oauth.invalid_response

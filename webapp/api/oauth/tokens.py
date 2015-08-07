@@ -1,21 +1,36 @@
 import datetime
+import cPickle
 
-from webapp.db import db, Model
+from webapp.db import Model
 from webapp.users import User
+from webapp import cache
 from clients import Client
 
 from webapp import utils
 
 
-class GrantToken(Model):
+class BaseToken(Model):
+    @property
+    def user(self):
+        return User.get_by_id(self.user_id)
+
+    @property
+    def client(self):
+        return Client.get_by_id(self.client_id)
+
+
+class GrantToken(BaseToken):
     """Grant token, to be exchanged for a BearerToken."""
 
-    client_id = db.StringField(required=True)
-    user = db.ReferenceField(User, required=True)
-    redirect_uri = db.URLField(required=True)
-    scopes = db.ListField(db.StringField())
-    expires = db.DateTimeField(required=True)
-    code = db.StringField(required=True)
+    attributes = ["id", "client_id", "code", "user_id", "redirect_uri", "scopes", "expires"]
+
+    def __init__(self, id, client_id, code, user_id, redirect_uri, scopes, expires=None):
+        self.client_id = client_id
+        self.user_id = user_id
+        self.code = code
+        self.redirect_uri = redirect_uri
+        self.scopes = scopes
+        self.expires = expires or datetime.datetime.utcnow() + datetime.timedelta(seconds=120)
 
     @classmethod
     def create(cls, client_id, code, user, redirect_uri, scopes):
@@ -27,17 +42,15 @@ class GrantToken(Model):
         redirect_uri: the uri to be redirected to after access is granted
         scopes: the requested oauth scopes.
         """
-        expires = datetime.datetime.utcnow() + datetime.timedelta(seconds=120)
         instance = cls(
             client_id=client_id,
-            user=user,
+            user_id=user.id,
             redirect_uri=redirect_uri,
             scopes=scopes,
             expires=expires,
             code=code,
             id=cls.make_id(client_id, code)
         )
-        instance.put()
         return instance
 
     @classmethod
@@ -48,22 +61,28 @@ class GrantToken(Model):
     @classmethod
     def lookup(cls, client_id, code):
         """Looks up a grant token for the given client and code."""
-        return cls.get_by_id(cls.make_id(client_id, code))
+        return cache.get("GRANT_TOKEN_"+cls.make_id(client_id, code))
+
+    def save(self):
+        """Override save(), because we want to store granttokens in the cache."""
+        s = cPickle.dumps(self)
+        cache.set("GRANT_TOKEN_"+self.id, s)
 
 
-class BearerToken(Model):
+class BearerToken(BaseToken):
     """Token that clients can use to access resources."""
-    access_token = db.StringField(required=True, unique=True)
-    refresh_token = db.StringField()
-    client_id = db.StringField(required=True)
-    user = db.ReferenceField(User, reverse_delete_rule=db.CASCADE, required=True)
-    scopes = db.ListField(db.StringField())
-    expires = db.DateTimeField(required=True)
-    token_type = db.StringField(required=True)
 
-    @property
-    def client(self):
-        return Client.get_by_id(self.client_id)
+    attributes = ["access_token", "refresh_token", "client_id", "user_id", "scopes",
+                  "expires", "token_type"]
+
+    def __init__(self, access_token, refresh_token, client_id, user_id, scopes=None, expires=None, token_type=None):
+        self.access_token = access_token
+        self.refresh_token = refresh_token
+        self.client_id = client_id
+        self.user_id = user_id
+        self.scopes = scopes
+        self.expires = expires
+        self.token_typ = token_type
 
     @classmethod
     def create(cls, access_token, refresh_token, client, user, expires_in,
@@ -83,7 +102,23 @@ class BearerToken(Model):
         return cls(access_token=access_token,
                    refresh_token=refresh_token,
                    client_id=client.client_id,
-                   user=user,
+                   user_id=user.id,
                    token_type=token_type,
                    scopes=scopes,
                    expires=expires)
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
+
+    @classmethod
+    def get_by_access_token(cls, access_token):
+        """Get a Bearer token by access token."""
+        result = cls.run(cls.get_table().get_ll(access_token, index="access_token"))[0]
+        return cls.from_dict(result)
+
+    @classmethod
+    def get_by_refresh_token(cls, refresh_token):
+        """Get a Bearer token by its refresh token."""
+        result = cls.run(cls.get_table().get_ll(refresh_token, index="refresh_token"))[0]
+        return cls.from_dict(result)
