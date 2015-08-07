@@ -24,7 +24,12 @@ def close_connection(exception):
 
 class Model(object):
     """A superclass to be used for database models. It has utilities to get a
-       database connection, and to turn the object into a dict."""
+       database connection, and to turn the object into a dict. Set a table_name property on the class to use the
+       'table' property, and get() and save() methods. If not set, the class name,
+       converted to lower case with an 's' appended will be used.
+
+       To specify which attributes should be savied add an 'attributes' class property
+       containing a list of property names. The first property name should be the primary key."""
 
     @classmethod
     def get_connection(cls):
@@ -48,7 +53,7 @@ class Model(object):
         for attr in self.attributes:
             if hasattr(self, attr):
                 continue
-                
+
             value = getattr(self, attr)
             if hasattr(value, "to_dict")
                 value = value.to_dict()
@@ -58,3 +63,33 @@ class Model(object):
             d[attr] = value
 
         return d
+
+    @classmethod
+    def get_table(self):
+        """Get the table object for this class."""
+        default_name = self.__class__.__name__.lower() + "s"
+        table_name = self.getattr("table_name", default_name)
+        return r.table(table_name)
+
+    @classmethod
+    def run(cls, query):
+        """Runs the given query"""
+        query.run(self.get_connection())
+
+    @classmethod
+    def get(cls, id):
+        """Get an object by its id."""
+        return cls.run(cls.get_table().get(id))
+
+    @property
+    def table(self):
+        return self.get_table()
+
+    def save(self):
+        """Saves the current object"""
+        d = self.to_dict()
+        return self.run(self.table.replace(d))
+
+    def delete(self):
+        """Deletes the current object"""
+        self.run(self.table.get(self.getattr(self.attributes[0])).delete())

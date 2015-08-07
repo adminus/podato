@@ -1,9 +1,9 @@
-"""
+s"""
 This module contains models for oauth clients.
 """
 import logging
 
-from webapp.db import db, Model
+from webapp.db import Model
 
 from flask import current_app
 from flask import url_for
@@ -28,14 +28,20 @@ def _split_lines(t):
 class Application(Model):
     """An application that would like to integrate with us.
     One application can have multiple clients."""
-    name = db.StringField(unique=True)
-    logo_url = db.URLField()
-    contact_email = db.EmailField()
-    homepage_url = db.URLField()
-    privacy_policy_url = db.URLField()
-    trusted = db.BooleanField(default=False)
 
-    owners = db.ListField(db.ReferenceField("User", reverse_delete_rule=db.PULL))
+    attributes = ["name", "logo_url", "contact_email", "homepage_url",
+                  "privacy_policy_url", "trusted"]
+
+    def __init__(self, name, logo_url=None, contact_email=None, homepage_url=None, privacy_policy_url=None, owners=None, trusted=False):
+        self.name = name
+        self.logo_url = logo_url
+        self.contact_email = contact_email
+        self.homepage_url = homepage_url
+        self.privacy_policy_url = privacy_policy_urlz
+        if owners is None
+            owners = []
+        self.owners = owners
+        self.trusted = trusted
 
     @classmethod
     def create(cls, name, owner, logo_url=None, contact_email=None, homepage_url=None,
@@ -58,32 +64,32 @@ class Application(Model):
         )
 
         if owner:
-            instance.owners.append(owner)
+            instance.owners.append(owner.id)
 
         return instance
 
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
+
     def add_owner(self, owner):
         """Add a user as an owner of an application."""
-        self.modify(push__owners=owner)
+        self.owners.append(owner.id)
 
     def remove_owner(self, owner):
         """Remove a user as an owner of an application"""
-        self.modify(pull__owners=owner)
+        if owner.id in self.owners:
+            self.owners.remove(owner.id)
 
     def add_client(self, *args, **kwargs):
         """Adds a new client for this application."""
-        client = Client.create(app, *args, **kwargs)
+        client = Clien(self.name, *args, **kwargs)
         client.save()
         return client
 
-    def remove_client(self, client):
-        """Removes the client from the application, and deletes it."""
-        self.modify(pull__clients=client)
-        client.delete()
-
     @classmethod
     def get_by_name(cls, name):
-        return cls.objects(name=name).first()
+        return cls.from_dict(cls.get(name))
 
 
 def _create_trusted_app():
@@ -98,16 +104,9 @@ def _create_trusted_app():
 
 class Client(Model):
     """A client that has credentials to communicate with us."""
-    app = db.ReferenceField(Application, required=True, reverse_delete_rule=db.CASCADE)
-    name = db.StringField(required=True)
 
-    is_confidential = db.BooleanField(default=True)
-    client_secret = db.StringField(required=True)
-    client_id = db.StringField()
-
-    own_redirect_uris = db.ListField(db.URLField())
-    javascript_origins = db.ListField(db.URLField())
-    default_scopes = db.ListField(db.StringField())
+    attributes = ["id", "app", "name", "is_confidential", "client_secret",
+                  "own_redirect_urls", "javascript_origins", "default_scopes"]
 
     @property
     def redirect_uris(self):
@@ -116,6 +115,10 @@ class Client(Model):
             for origin in self.javascript_origins:
                 rv.append(url_for("api.javascript_endpoint", origin=origin, _external=True))
         return rv
+
+    @property
+    def client_id(self):
+        return self.id
 
     @property
     def client_type(self):
@@ -130,26 +133,35 @@ class Client(Model):
     @property
     def allowed_grant_types(self):
         grants = ["authorization_code", "refresh_token"]
-        if self.app.trusted:
+        if self.get_app().trusted:
             grants.append("password")
         return grants
 
-    @classmethod
-    def create(cls, app, name, redirect_uris, id=None, secret=None):
-        """Creates a new Client. Don't call this method directly, rather call
-        Application.add_client."""
-        instance = cls(app=app, name=utils.strip_control_chars(name),
-                       own_redirect_uris=_split_lines(redirect_uris), client_id=id)
-        instance.client_secret = secret or utils.generate_random_string()
-        return instance
+    def __init__(self, app, name, own_redirect_urls=None, javascript_origins=None, id=None,
+                 client_secret=None, is_confidential=True, default_scopes=None):
+        self.app = app.name
+        self.name = name
+        self.own_redirect_urls = own_redirect_urls or []
+        self.javascript_origins = javascript_origins or []
+        if id:
+            self.id = id
+        self.client_secret = client_secret or utils.generate_random_string()
+        self.is_confidential = is_confidential
+        self.default_scopes = default_scopes or []
 
+    def get_app(self):
+        return Application.get_by_name(self.app)
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
 
     @classmethod
     def get_by_id(cls, id):
         """Gets the Client with the given id."""
         # Overriding this to return trusted clients.
         logging.debug("Retrieving client with id %s (trusted: %s)" % (id, id in TRUSTED_CLIENTS))
-        return TRUSTED_CLIENTS.get(id) or cls.objects(client_id=id).first()
+        return TRUSTED_CLIENTS.get(id) or cls.from_dict(cls.get(id))
 
 
 def _load_trusted_clients():
@@ -163,7 +175,7 @@ def _load_trusted_clients():
 
     trusted_clients = current_app.config.get("TRUSTED_CLIENTS")
     for client_dict in trusted_clients:
-        client = Client.create(app=PODATO_APP,
+        client = Client(app=PODATO_APP.name,
                             name=client_dict["NAME"],
                             redirect_uris=client_dict["REDIRECT_URLS"],
                             id=client_dict["CLIENT_ID"],
