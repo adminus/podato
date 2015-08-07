@@ -26,6 +26,8 @@ TIMEOUT = "E_TIMEOUT"
 
 class CrawlError(Model):
 
+    attributes = ["error_type", "attrs"]
+
     def __init__(self, error_type=UNKNOWN_ERROR, attrs=None):
         self.error_type = error_type
         self.attrs = attrs or {}

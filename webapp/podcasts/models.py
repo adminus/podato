@@ -1,34 +1,58 @@
-from webapp.db import db, Model
+from webapp.db import Model, r
 
-from mongoengine import Q
 
 from crawl_errors import CrawlError
 
-class Person(db.EmbeddedDocument):
+class Person(Model):
     """Model that represents a person within a podcast feed."""
-    name = db.StringField()
-    email = db.EmailField()
+
+    attributes = ["name", "email"]
+
+    def __init__(self, name=None, email=None):
+        self.name = name
+        self.email = email
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
 
 
-class Enclosure(db.EmbeddedDocument):
+class Enclosure(Model):
     """Model that represents an enclosure (an episode's file.)"""
-    url = db.URLField()
-    type = db.StringField()
+
+    attributes = ["url", "type"]
+
+    def __init__(self, url=None, type=None):
+        self.url = url
+        self.type = type
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
 
 
-class Episode(db.EmbeddedDocument):
+class Episode(Model):
     """Model that represents a podcast episode."""
-    title = db.StringField(required=True)
-    subtitle = db.StringField()
-    description = db.StringField()
-    author = db.StringField()
-    guid = db.StringField(required=True)
-    published = db.DateTimeField(required=True)
-    image = db.URLField()
-    duration = db.IntField()
-    explicit = db.IntField()
-    enclosure = db.EmbeddedDocumentField(Enclosure, required=True)
 
+    attributes = ["title", "subtitle", "description", "author", "guid",
+                  "published", "image", "duration", "explicit", "enclosure"]
+
+    def __init__(self, title, guid, enclosure, subtitle=None, description=None, author=None, published=None, image=None, duration=None, explicit=None):
+        self.title = title
+        self.guid = guid
+        self.enclosure = enclosure
+        self.subtitle=subtitle
+        self.description = description
+        self.author = author
+        self.published = published,
+        self.image = image
+        self.duration = duration
+        self.explicit = explicit
+
+    @classmethod
+    def from_dict(cls, d):
+        d["enclosure"] = Enclosure.from_dict(d["enclosure"])
+        return cls(**d)
 
 
 class Podcast(Model):
@@ -49,23 +73,67 @@ class Podcast(Model):
     subscribers = db.IntField(default=0)
     errors = db.ListField(db.EmbeddedDocumentField(CrawlError), default=[])
 
+    def __init__(self, url, title=None, author=None, description=None, language=None,
+                 copyright=None, image=None, categories=None, owner=None,
+                 last_fetched=None, previous_urls=None, episodes=None,
+                 subscribers=None, errors=None):
+
+        self.url = url
+        self.title = title
+        self.author = author
+        self.description = description
+        self.language = language
+        self.copyright = copyright
+        self.image = image
+        self.categories = categories or []
+        self.owner = owner
+        self.last_fetched = last_fetched
+        self.previous_urls = previous_urls or []
+        self.episodes = episodes or []
+        self.subscribers = subscribers
+        self.errors = errors
+
+    @classmethod
+    def from_dict(cls, d):
+        if "owner" in d:
+            d["owner"] = Person.from_dict(d["owner"])
+        if "episodes" in d
+            d["episodes"] = [Episode.from_dict(d2) for d2 in d["episodes"]]
+        if "errors" in d
+            d["errors"] = [CrawlError.from_dict(d2) for d2 in d["errors"]]
+
+        return cls(**d)
+
     @classmethod
     def get_by_url(cls, url):
         """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
-        return cls.objects(db.Q(url=url) | db.Q(previous_urls=url)).first()
+        p = cls.get(url)
+        if not p:
+            p = cls.run(cls.get_table().filter(
+                lambda podcast: podcast["previous_urls"].contains(url)
+            ))[0]
+
+        if p:
+            return cls.from_dict(p)
 
     @classmethod
-    def get_multi_by_url(cls, urls):
+    def get_multi_by_url(cls, urls=[]):
         """Given a list of urls, returns a dictionary mapping from url to podcast."""
-        podcasts = cls.objects(db.Q(url__in=urls) | db.Q(previous_urls__in=urls))
-        return {cls._pick_key(podcast, urls) : podcast for podcast in podcasts}
+        urls = set(urls)
+        d = {}
 
-    @classmethod
-    def _pick_key(cls, podcast, urls):
-        """Helper method for get_multi_by_url that determines which key to use for a given podcast in the returned dictionary."""
-        if podcast.url in urls:
-            return podcast.url
-        else:
-            for url in podcast.previous_urls:
-                if url in urls:
-                    return url
+        podcasts = cls.run(cls.get_table().get_all(r.args(urls)))
+
+        for pod in podcasts:
+            urls.remove(pod.url)
+            d[pod.url] = cls.from_dict(pod)
+
+        moved_podcasts = cls.run(cls.get_table().filter(
+            lambda pod: pod["previous_urls"].set_intersection(urls).count() > 0
+        ))
+
+        for pod in moved_podcasts:
+            for key in urls.intersection(pod["previous_urls"]):
+                d[key] = cls.from_dict(pod)
+
+        return d
