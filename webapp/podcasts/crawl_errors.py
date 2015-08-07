@@ -1,4 +1,4 @@
-from webapp.db import db
+from webapp.db import Model, ValidationError
 
 NO_TITLE = "E_NO_TITLE"
 NO_DESCRIPTION = "E_NO_DESCRIPTION"
@@ -8,7 +8,6 @@ NO_IMAGE = "E_NO_IMAGE"
 NO_DURATION = "E_NO_DURATION"
 NO_ENCLOSURE = "E_NO_ENCLOSURE"
 MALFORMED_DURATION = "E_MALFORMED_DURATION"
-MALFORMED_ENCLOSURE_SIZE = "E_MALFORMED_ENCLOSURE_SIZE"
 UNKNOWN_ERROR = "E_UNKNOWN"
 
 # WARNINGS
@@ -25,25 +24,26 @@ TIMEOUT = "E_TIMEOUT"
 
 
 
-class CrawlError(db.EmbeddedDocument):
-    error_type = db.StringField(choices=[
-        NO_TITLE,
-        NO_AUTHOR,
-        NO_DESCRIPTION,
-        NO_DURATION,
-        NO_ENCLOSURE,
-        NO_IMAGE,
-        NO_OWNER,
+class CrawlError(Model):
 
-        NOT_FOUND,
-        SERVER_ERROR,
-        ACCESS_DENIED,
-        REDIRECT_LOOP,
-        TIMEOUT
-    ], default=UNKNOWN_ERROR)
+    def __init__(self, error_type=UNKNOWN_ERROR, attrs=None):
+        self.error_type = error_type
+        self.attrs = attrs or {}
 
-    attrs = db.DictField()
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
 
     @classmethod
     def create(cls, attrs={}, **kwargs):
-        return cls(attrs=attrs, **kwargs)
+        instance = cls(attrs=attrs, **kwargs)
+        instance.validate()
+        return instance
+
+    def validate(self):
+        if self.error_type not in [NO_TITLE, NO_DESCRIPTION, NO_AUTHOR, NO_OWNER,
+                                   NO_IMAGE, NO_DURATION, NO_ENCLOSURE,
+                                   MALFORMED_DURATION, UNKNOWN_ERROR, NO_LANGUAGE,
+                                   NO_SUBTITLE, NOT_FOUND, SERVER_ERROR, ACCESS_DENIED,
+                                   REDIRECT_LOOP, TIMEOUT]
+            raise ValidationError("unknown error_type %s" % self.error_type)

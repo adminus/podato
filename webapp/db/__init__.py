@@ -93,3 +93,7 @@ class Model(object):
     def delete(self):
         """Deletes the current object"""
         self.run(self.table.get(self.getattr(self.attributes[0])).delete())
+
+
+class ValidationError(Exception):
+    pass
