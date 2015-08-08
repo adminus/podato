@@ -3,7 +3,7 @@ import datetime
 import random
 import logging
 
-from webapp.db import db, Model
+from webapp.db import r, Model
 
 from webapp.users import auth
 from webapp.podcasts import SubscriptionHolder
@@ -12,12 +12,19 @@ from webapp import utils
 
 class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
     """Model that represents a user."""
-    username = db.StringField(required=True, unique=True)
-    primary_email = db.EmailField(required=False)
-    email_addresses = db.ListField(db.EmailField())
-    avatar_url = db.URLField()
-    following = db.ListField(db.ReferenceField("User"))
-    joined = db.DateTimeField(default=datetime.datetime.now)
+
+    attributes = ["id", "username", "primary_email", "email_addresses", "avatar_url",
+                  "following", "joined"]
+
+    def __init__(self, id=None, username=None, primary_email=None, email_addresses=None,
+                 avatar_url=None, following=None, joined=None, **kwargs):
+        self.username = username
+        self.primary_email = primary_email
+        self.email_addresses = email_addresses or []
+        self.avatar_url = avatar_url
+        self.following = following
+        self.joined = joined
+        super(User, self).__init__(self, **kwargs)
 
     @classmethod
     def create(cls, username, email, avatar_url=None):
@@ -45,14 +52,18 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
 
     @classmethod
     def is_username_available(cls, username):
-        return cls.objects(username=username).count() == 0
+        return cls.run(cls.table.get_all(username, index=username).count()) == 0
 
-    def follow(self, other_users):
-        if not isinstance(other_users, list):
-            other_users = [other_users]
-        self.modify(push_all__following=other_users)
+    def follow(self, other_user_ids):
+        if not isinstance(other_user_idss, list):
+            other_user_idss = [other_user_ids]
+        self.run(self.table.get(self.id).update(
+            lambda user: user["following"] = user["following"].set_union(other_user_ids)
+        ))
 
-    def unfollow(self, other_users):
-        if not isinstance(other_users, list):
-            other_users = [other_users]
-        self.modify(pull_all__following=other_users)
+    def unfollow(self, other_user_ids):
+        if not isinstance(other_user_ids, list):
+            other_user_ids = [other_user_ids]
+        self.run(self.table.get(self.id).update(
+            lambda user: user["following"] = user["following"].set_difference(other_user_ids)
+        ))

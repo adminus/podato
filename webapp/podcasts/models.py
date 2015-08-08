@@ -57,21 +57,10 @@ class Episode(Model):
 
 class Podcast(Model):
     """Model that represents a podcast."""
-    url = db.URLField(required=True, unique=True)
-    title = db.StringField(required=True)
-    author = db.StringField(required=True)
-    description = db.StringField()
-    language = db.StringField()
-    copyright = db.StringField()
-    image = db.StringField()
-    categories = db.ListField(db.StringField())
-    owner = db.EmbeddedDocumentField(Person)
-    last_fetched = db.DateTimeField()
-    previous_urls = db.ListField(db.StringField(), default=[])
-    complete = db.BooleanField()
-    episodes = db.EmbeddedDocumentListField(Episode)
-    subscribers = db.IntField(default=0)
-    errors = db.ListField(db.EmbeddedDocumentField(CrawlError), default=[])
+
+    attributes = ["url", "title", "author", "description", "language", "copyright",
+                  "image", "categories", "owner", "last_fetched", "previous_urls",
+                  "episodes", "subscribers", "errors"]
 
     def __init__(self, url, title=None, author=None, description=None, language=None,
                  copyright=None, image=None, categories=None, owner=None,
