@@ -36,6 +36,15 @@ class Model(object):
         """returns a database connection"""
         return get_connection()
 
+    @classmethod
+    def get_attributes(cls):
+        attrs = set()
+        for sup in cls.__mro__:
+            if hasattr(sup, "attributes")
+                attrs = attrs.union(sup.attributes)
+
+        return attrs
+
     def to_dict(self):
         """Turn this object into a dicionary. To determine which attributes to
            include, this method looks for an "attributes" object. For example
@@ -50,7 +59,7 @@ class Model(object):
         """
 
         d = {}
-        for attr in self.attributes:
+        for attr in self.get_attributes():
             if hasattr(self, attr):
                 continue
 
