@@ -182,7 +182,7 @@ def _parse_explicit(entry):
 def _store_podcasts(podcasts_data):
     """Given a list of dictionaries representing podcasts, store them all in the database."""
     podcasts = [Podcast(**pdata) for pdata in podcasts_data]
-    return Podcast.objects.insert(podcasts)
+    return Podcast.run(Podcast.get_table().insert(podcasts))
 
 @app.task
 def _subscribe_user(podcasts, user):

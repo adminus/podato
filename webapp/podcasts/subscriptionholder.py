@@ -7,13 +7,20 @@ from webapp.async import AsyncSuccess
 
 class SubscriptionHolder(object):
     """A mixin to be applied to the User model, which represents the user's subscriptions."""
-    subscriptions = db.ListField(db.ReferenceField(Podcast, reverse_delete_rule=db.PULL))
+
+    attributes = ["subscriptions"]
+
+    def __init__(self, subscriptions=None, **kwargs):
+        super(SubscriptionHolder, self).__init__(self, **kwargs)
+        self.subscriptions = subscriptions or []
 
     def subscribe(self, podcast):
         """Subscribe the user to the given podcast."""
-        if podcast in self.subscriptions:
+        if podcast.url in self.subscriptions:
             return False
-        self.modify(push__subscriptions=podcast)
+        self.run(self.table.get(self.id).update(
+            lambda user: user["subscriptions"].append(podcast.url)
+        ))
         return True
 
     def subscribe_by_url(self, url):
@@ -25,9 +32,12 @@ class SubscriptionHolder(object):
 
     def unsubscribe(self, podcast):
         """Unsubscribe the user from the podcast."""
-        self.modify(pull__subscriptions=podcast)
-        podcast.modify(dec__subscribers=1)
-        return True
+        if podcast.url in self.subscriptions:
+            self.run(self.table.get(self.id).update(
+                lambda user: user["subscriptions"] = user["subscriptions"].set_difference([podcast.url])
+            ))
+            return True
+        return False
 
     def unsubscribe_by_url(self, url):
         """Unsubscribe the user from the podcast at the given feed url."""
@@ -40,10 +50,12 @@ class SubscriptionHolder(object):
         """Subscribe the user to multiple podcasts. podcasts should be an iterable of Podcast objects."""
         not_already_subscribed = []
         for podcast in podcasts:
-            if podcast not in self.subscriptions:
-                not_already_subscribed.append(podcast)
-            self.modify(push_all__subscriptions=not_already_subscribed)
-        Podcast.objects(url__in=[p.url for p in not_already_subscribed]).update(inc__subscribers=1)
+            if podcast.url not in self.subscriptions:
+                not_already_subscribed.append(podcast.url)
+
+        self.run(self.table.get(self.id).update(
+            lambda user: user["subscriptions"] = user["subscriptions"].set_union(not_already_subscribed)
+        ))
 
     def subscribe_multi_by_url(self, urls):
         """Subscribe the user to all the podcasts at the given feed urls. urls should be an iterable of strings."""
