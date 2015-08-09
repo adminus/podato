@@ -15,7 +15,7 @@ class ProvidedIdentity(Model):
         self.access_token = access_token
 
 
-class ProviderTokenHolder(Model):
+class ProviderTokenHolder(object):
     """This is a mixin for User, which stores the auth tokens of 3rd party providers like Facebook or Google"""
 
     attributes = ["provided_identities"]

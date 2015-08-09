@@ -1,7 +1,5 @@
 import logging
 import sys
-
-import db
 import cache
 import flask
 import flask_restful
@@ -14,13 +12,12 @@ app = flask.Flask(__name__)
 app.config.from_object(settings)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.DEBUG)
-db.init_db(app)
 cache.init_cache(app)
 
 with app.app_context():
     from users import users_blueprint
     from api import api_blueprint
-
+    import db
     import async
 
     app.register_blueprint(users_blueprint)

@@ -58,12 +58,12 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         if not isinstance(other_user_idss, list):
             other_user_idss = [other_user_ids]
         self.run(self.table.get(self.id).update(
-            lambda user: user["following"] = user["following"].set_union(other_user_ids)
+            {"following": r.row["following"].set_union(other_user_ids)}
         ))
 
     def unfollow(self, other_user_ids):
         if not isinstance(other_user_ids, list):
             other_user_ids = [other_user_ids]
         self.run(self.table.get(self.id).update(
-            lambda user: user["following"] = user["following"].set_difference(other_user_ids)
+            {"following": r.row["following"].set_difference(other_user_ids)}
         ))

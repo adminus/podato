@@ -1,4 +1,4 @@
-s"""
+"""
 This module contains models for oauth clients.
 """
 import logging
@@ -8,7 +8,6 @@ from webapp.db import Model
 from flask import current_app
 from flask import url_for
 
-from webapp import utils
 
 # Our own web application will be stored here.
 PODATO_APP = None
@@ -37,8 +36,8 @@ class Application(Model):
         self.logo_url = logo_url
         self.contact_email = contact_email
         self.homepage_url = homepage_url
-        self.privacy_policy_url = privacy_policy_urlz
-        if owners is None
+        self.privacy_policy_url = privacy_policy_url
+        if owners is None:
             owners = []
         self.owners = owners
         self.trusted = trusted
@@ -46,6 +45,7 @@ class Application(Model):
     @classmethod
     def create(cls, name, owner, logo_url=None, contact_email=None, homepage_url=None,
                privacy_policy_url=None,):
+        from webapp import utils
         """Creates a new application.
 
         arguments:
@@ -70,6 +70,8 @@ class Application(Model):
 
     @classmethod
     def from_dict(cls, d):
+        if not d:
+            return None
         return cls(**d)
 
     def add_owner(self, owner):
@@ -98,7 +100,7 @@ def _create_trusted_app():
     if not podato:
         podato = Application.create("podato", None)
         podato.trusted = True
-        podato.put()
+        podato.save()
     return podato
 
 
@@ -139,7 +141,10 @@ class Client(Model):
 
     def __init__(self, app, name, own_redirect_urls=None, javascript_origins=None, id=None,
                  client_secret=None, is_confidential=True, default_scopes=None):
-        self.app = app.name
+        from webapp import utils
+        if isinstance(app, Application):
+            app = app.name
+        self.app = app
         self.name = name
         self.own_redirect_urls = own_redirect_urls or []
         self.javascript_origins = javascript_origins or []
@@ -154,6 +159,8 @@ class Client(Model):
 
     @classmethod
     def from_dict(cls, d):
+        if not d:
+            return None
         return cls(**d)
 
     @classmethod
@@ -177,9 +184,9 @@ def _load_trusted_clients():
     for client_dict in trusted_clients:
         client = Client(app=PODATO_APP.name,
                             name=client_dict["NAME"],
-                            redirect_uris=client_dict["REDIRECT_URLS"],
+                            own_redirect_urls=client_dict["REDIRECT_URLS"],
                             id=client_dict["CLIENT_ID"],
-                            secret=current_app.config[client_dict["NAME"].upper() + "_CLIENT_SECRET"])
+                            client_secret=current_app.config[client_dict["NAME"].upper() + "_CLIENT_SECRET"])
         client.default_scopes = current_app.config.get("OAUTH_SCOPES").keys()
         client.javascript_origins = client_dict.get("JAVASCRIPT_ORIGINS")
         TRUSTED_CLIENTS[client_dict["CLIENT_ID"]] = client

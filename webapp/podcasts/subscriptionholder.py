@@ -1,6 +1,6 @@
 import logging
 
-from webapp.db import db
+from webapp.db import r
 from webapp.podcasts.models import Podcast
 from webapp.podcasts import crawler
 from webapp.async import AsyncSuccess
@@ -34,7 +34,7 @@ class SubscriptionHolder(object):
         """Unsubscribe the user from the podcast."""
         if podcast.url in self.subscriptions:
             self.run(self.table.get(self.id).update(
-                lambda user: user["subscriptions"] = user["subscriptions"].set_difference([podcast.url])
+                {"subscriptions": r.row["subscriptions"].set_difference([podcast.url])}
             ))
             return True
         return False
@@ -54,7 +54,7 @@ class SubscriptionHolder(object):
                 not_already_subscribed.append(podcast.url)
 
         self.run(self.table.get(self.id).update(
-            lambda user: user["subscriptions"] = user["subscriptions"].set_union(not_already_subscribed)
+            {"subscriptions": r.row["subscriptions"].set_union(not_already_subscribed)}
         ))
 
     def subscribe_multi_by_url(self, urls):

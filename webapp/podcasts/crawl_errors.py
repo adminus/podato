@@ -47,5 +47,5 @@ class CrawlError(Model):
                                    NO_IMAGE, NO_DURATION, NO_ENCLOSURE,
                                    MALFORMED_DURATION, UNKNOWN_ERROR, NO_LANGUAGE,
                                    NO_SUBTITLE, NOT_FOUND, SERVER_ERROR, ACCESS_DENIED,
-                                   REDIRECT_LOOP, TIMEOUT]
+                                   REDIRECT_LOOP, TIMEOUT]:
             raise ValidationError("unknown error_type %s" % self.error_type)

@@ -40,7 +40,7 @@ class Model(object):
     def get_attributes(cls):
         attrs = set()
         for sup in cls.__mro__:
-            if hasattr(sup, "attributes")
+            if hasattr(sup, "attributes"):
                 attrs = attrs.union(sup.attributes)
 
         return attrs
@@ -64,7 +64,7 @@ class Model(object):
                 continue
 
             value = getattr(self, attr)
-            if hasattr(value, "to_dict")
+            if hasattr(value, "to_dict"):
                 value = value.to_dict()
             if isinstance(value, set, tuple, list):
                 value = [item.to_dict() if hasattr(item, "to_dict") else item for item in value]
@@ -74,16 +74,16 @@ class Model(object):
         return d
 
     @classmethod
-    def get_table(self):
+    def get_table(cls):
         """Get the table object for this class."""
-        default_name = self.__class__.__name__.lower() + "s"
-        table_name = self.getattr("table_name", default_name)
+        default_name = cls.__name__.lower() + "s"
+        table_name = getattr(cls, "table_name", default_name)
         return r.table(table_name)
 
     @classmethod
     def run(cls, query):
         """Runs the given query"""
-        query.run(self.get_connection())
+        query.run(cls.get_connection())
 
     @classmethod
     def get(cls, id):

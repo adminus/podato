@@ -86,9 +86,9 @@ class Podcast(Model):
     def from_dict(cls, d):
         if "owner" in d:
             d["owner"] = Person.from_dict(d["owner"])
-        if "episodes" in d
+        if "episodes" in d:
             d["episodes"] = [Episode.from_dict(d2) for d2 in d["episodes"]]
-        if "errors" in d
+        if "errors" in d:
             d["errors"] = [CrawlError.from_dict(d2) for d2 in d["errors"]]
 
         return cls(**d)
