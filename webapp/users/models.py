@@ -51,6 +51,14 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         return instance
 
     @classmethod
+    def get_by_id(cls, id):
+        return cls.from_dict(
+            cls.run(
+                cls.get_table().get(id)
+            )
+        )
+
+    @classmethod
     def is_username_available(cls, username):
         return cls.run(cls.table.get_all(username, index=username).count()) == 0
 
