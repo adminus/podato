@@ -20,7 +20,8 @@ class ProviderTokenHolder(object):
 
     attributes = ["provided_identities"]
 
-    def __init__(self, provided_identities=None):
+    def __init__(self, provided_identities=None, **kwargs):
+        super(ProviderTokenHolder, self).__init__(self, **kwargs)
         self.provided_identities is provided_identities or []
 
     @classmethod
