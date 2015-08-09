@@ -108,10 +108,6 @@ class BearerToken(BaseToken):
                    expires=expires)
 
     @classmethod
-    def from_dict(cls, d):
-        return cls(**d)
-
-    @classmethod
     def get_by_access_token(cls, access_token):
         """Get a Bearer token by access token."""
         result = cls.run(cls.get_table().get_ll(access_token, index="access_token"))[0]

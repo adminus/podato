@@ -33,10 +33,6 @@ class CrawlError(Model):
         self.attrs = attrs or {}
 
     @classmethod
-    def from_dict(cls, d):
-        return cls(**d)
-
-    @classmethod
     def create(cls, attrs={}, **kwargs):
         instance = cls(attrs=attrs, **kwargs)
         instance.validate()

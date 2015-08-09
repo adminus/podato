@@ -18,13 +18,13 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
 
     def __init__(self, id=None, username=None, primary_email=None, email_addresses=None,
                  avatar_url=None, following=None, joined=None, **kwargs):
+        super(User, self).__init__(self, **kwargs)
         self.username = username
         self.primary_email = primary_email
         self.email_addresses = email_addresses or []
         self.avatar_url = avatar_url
         self.following = following
         self.joined = joined
-        super(User, self).__init__(self, **kwargs)
 
     @classmethod
     def create(cls, username, email, avatar_url=None):

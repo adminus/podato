@@ -68,12 +68,6 @@ class Application(Model):
 
         return instance
 
-    @classmethod
-    def from_dict(cls, d):
-        if not d:
-            return None
-        return cls(**d)
-
     def add_owner(self, owner):
         """Add a user as an owner of an application."""
         self.owners.append(owner.id)
@@ -156,12 +150,6 @@ class Client(Model):
 
     def get_app(self):
         return Application.get_by_name(self.app)
-
-    @classmethod
-    def from_dict(cls, d):
-        if not d:
-            return None
-        return cls(**d)
 
     @classmethod
     def get_by_id(cls, id):

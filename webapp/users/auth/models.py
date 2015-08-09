@@ -24,11 +24,6 @@ class ProviderTokenHolder(object):
         super(ProviderTokenHolder, self).__init__(self, **kwargs)
         self.provided_identities is provided_identities or []
 
-    @classmethod
-    def from_dict(cls, d):
-        d["provided_identities"] = [ProvidedIdentity(**d2) for d2 in d["provided_identities"]]
-        return cls(**d)
-
     def add_provided_identity(self, provider, user_id, access_token):
         # If the user already has an identity from the given platform with the given id,
         # update its access_token

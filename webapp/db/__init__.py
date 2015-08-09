@@ -22,6 +22,9 @@ def close_connection(exception):
     if conn is not None:
         conn.close()
 
+# A dictionary that maps type names (as returned by Model._get_type()) to classes.
+TYPE_RERISTRY = {}
+
 class Model(object):
     """A superclass to be used for database models. It has utilities to get a
        database connection, and to turn the object into a dict. Set a table_name property on the class to use the
@@ -30,6 +33,7 @@ class Model(object):
 
        To specify which attributes should be savied add an 'attributes' class property
        containing a list of property names. The first property name should be the primary key."""
+
 
     @classmethod
     def get_connection(cls):
@@ -45,6 +49,11 @@ class Model(object):
 
         return attrs
 
+    @classmethod
+    def __new__(cls, **kwargs):
+        super(Model, cls).__new__(cls, **kwargs)
+        TYPE_RERISTRY[cls._get_type()] = cls
+
     def to_dict(self):
         """Turn this object into a dicionary. To determine which attributes to
            include, this method looks for an "attributes" object. For example
@@ -58,7 +67,7 @@ class Model(object):
         Names in the list that don't correspond to an attribute on the object will be ignored.
         """
 
-        d = {}
+        d = {"__type": self._get_type()}
         for attr in self.get_attributes():
             if hasattr(self, attr):
                 continue
@@ -74,9 +83,32 @@ class Model(object):
         return d
 
     @classmethod
+    def from_dict(cls, d):
+        """Converts a dictionary back to the class within the application"""
+        type_ = d.get("__type", None)
+        if type_:
+            clss = TYPE_RERISTRY[type_]
+        else:
+            clss = cls
+
+        for key in d:
+            if isinstance(d[key], dict) and "__type" in d[key]:
+                d[key] = cls.from_dict(d[key])
+            if isinstance(d[key], list):
+                for i in xrange(len(d[key])):
+                    if isinstance(d[key][i], dict) and "__type" in d[key][i]:
+                        d[key][i] = cls.from_dict(d[key][i])
+
+        return clss(**d)
+
+    @classmethod
+    def _get_type(cls):
+        return cls.__name__.lower() + "s"
+
+    @classmethod
     def get_table(cls):
         """Get the table object for this class."""
-        default_name = cls.__name__.lower() + "s"
+        default_name = cls._get_type()
         table_name = getattr(cls, "table_name", default_name)
         return r.table(table_name)
 

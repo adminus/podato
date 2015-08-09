@@ -30,7 +30,7 @@ class UserResource(Resource):
                 raise AuthorizationRequired()
             user = req.user
         else:
-            user = User.get(userId)
+            user = User.from_dict(User.get(userId))
 
         if not user:
             abort(404, message="User not found: %s." % userId)

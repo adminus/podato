@@ -12,10 +12,6 @@ class Person(Model):
         self.name = name
         self.email = email
 
-    @classmethod
-    def from_dict(cls, d):
-        return cls(**d)
-
 
 class Enclosure(Model):
     """Model that represents an enclosure (an episode's file.)"""
@@ -25,10 +21,6 @@ class Enclosure(Model):
     def __init__(self, url=None, type=None):
         self.url = url
         self.type = type
-
-    @classmethod
-    def from_dict(cls, d):
-        return cls(**d)
 
 
 class Episode(Model):
@@ -48,11 +40,6 @@ class Episode(Model):
         self.image = image
         self.duration = duration
         self.explicit = explicit
-
-    @classmethod
-    def from_dict(cls, d):
-        d["enclosure"] = Enclosure.from_dict(d["enclosure"])
-        return cls(**d)
 
 
 class Podcast(Model):
@@ -81,17 +68,6 @@ class Podcast(Model):
         self.episodes = episodes or []
         self.subscribers = subscribers
         self.errors = errors
-
-    @classmethod
-    def from_dict(cls, d):
-        if "owner" in d:
-            d["owner"] = Person.from_dict(d["owner"])
-        if "episodes" in d:
-            d["episodes"] = [Episode.from_dict(d2) for d2 in d["episodes"]]
-        if "errors" in d:
-            d["errors"] = [CrawlError.from_dict(d2) for d2 in d["errors"]]
-
-        return cls(**d)
 
     @classmethod
     def get_by_url(cls, url):
