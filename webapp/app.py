@@ -23,3 +23,8 @@ with app.app_context():
     app.register_blueprint(users_blueprint)
     app.register_blueprint(api_blueprint)
     async.init_celery(app)
+
+    @app.before_request
+    def log_request():
+        r = flask.request
+        logging.info("received request %s %s" % (r.method, r.url))
