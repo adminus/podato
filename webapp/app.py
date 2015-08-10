@@ -1,5 +1,6 @@
 import logging
 import sys
+from tornado.http1connection import _ExceptionLoggingContext
 import cache
 import flask
 import flask_restful
@@ -10,6 +11,7 @@ from flask import redirect
 
 app = flask.Flask(__name__)
 app.config.from_object(settings)
+logging.basicConfig(level=logging.DEBUG)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.DEBUG)
 cache.init_cache(app)
