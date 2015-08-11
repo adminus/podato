@@ -80,3 +80,5 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         self.run(self.table.get(self.id).update(
             {"following": r.row["following"].set_difference(other_user_ids)}
         ))
+
+User.register()

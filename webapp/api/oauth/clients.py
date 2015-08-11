@@ -87,6 +87,8 @@ class Application(Model):
     def get_by_name(cls, name):
         return cls.from_dict(cls.get(name))
 
+Application.register()
+
 
 def _create_trusted_app():
     """Creates our own "Podato" app."""
@@ -158,6 +160,7 @@ class Client(Model):
         logging.debug("Retrieving client with id %s (trusted: %s)" % (id, id in TRUSTED_CLIENTS))
         return TRUSTED_CLIENTS.get(id) or cls.from_dict(cls.get(id))
 
+Client.register()
 
 def _load_trusted_clients():
     """Loads al trusted clients """

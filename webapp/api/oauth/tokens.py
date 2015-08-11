@@ -122,3 +122,5 @@ class BearerToken(BaseToken):
         if result:
             return cls.from_dict(result[0])
         return None
+
+BearerToken.register()

@@ -55,10 +55,9 @@ class Model(object):
         return unique
 
     @classmethod
-    def __new__(cls, *args, **kwargs):
-        """Registers a model's type when it is instantiated."""
+    def register(cls):
+        """Registers a model's type."""
         TYPE_RERISTRY[cls._get_type()] = cls
-        return super(Model, cls).__new__(cls, *args, **kwargs)
 
     def to_dict(self):
         """Turn this object into a dicionary. To determine which attributes to
@@ -96,6 +95,8 @@ class Model(object):
         if not d:
             return None
         type_ = d.get("__type", None)
+        del d["__type"]
+
         if type_:
             clss = TYPE_RERISTRY[type_]
         else:

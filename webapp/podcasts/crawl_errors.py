@@ -45,3 +45,6 @@ class CrawlError(Model):
                                    NO_SUBTITLE, NOT_FOUND, SERVER_ERROR, ACCESS_DENIED,
                                    REDIRECT_LOOP, TIMEOUT]:
             raise ValidationError("unknown error_type %s" % self.error_type)
+
+
+CrawlError.register()

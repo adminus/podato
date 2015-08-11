@@ -102,3 +102,9 @@ class Podcast(Model):
                 d[key] = cls.from_dict(pod)
 
         return d
+
+
+Person.register()
+Podcast.register()
+Episode.register()
+Enclosure.register()
