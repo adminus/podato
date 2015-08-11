@@ -22,7 +22,7 @@ class ProviderTokenHolder(object):
 
     def __init__(self, provided_identities=None, **kwargs):
         super(ProviderTokenHolder, self).__init__(self, **kwargs)
-        self.provided_identities is provided_identities or []
+        self.provided_identities = provided_identities or []
 
     def add_provided_identity(self, provider, user_id, access_token):
         # If the user already has an identity from the given platform with the given id,
