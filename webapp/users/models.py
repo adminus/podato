@@ -60,7 +60,8 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
 
     @classmethod
     def is_username_available(cls, username):
-        return cls.run(cls.table.get_all(username, index=username).count()) == 0
+        """Returns True if no user with the given username exists, False otherwise"""
+        return cls.run(cls.get_table().get_all(username, index="username").count()) == 0
 
     def follow(self, other_user_ids):
         if not isinstance(other_user_idss, list):

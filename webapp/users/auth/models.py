@@ -62,7 +62,7 @@ class ProviderTokenHolder(object):
         """Gets the User associated with the given provided identity."""
         user = cls.run(cls.get_table().filter(
             lambda user: user["provided_identities"].contains(
-                lambda identity: identity["provider"] == provider & identity["user_id"] == user_id
+                lambda identity: (identity["provider"] == provider) & (identity["user_id"] == user_id)
             )
         ))
         return user
