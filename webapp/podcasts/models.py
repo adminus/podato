@@ -103,6 +103,23 @@ class Podcast(Model):
 
         return d
 
+    @classmethod
+    def query(cls, order=None, category=None, author=None, language=None, page=1, per_page=30):
+
+        query = cls.get_table()
+        if order:
+            query = query.order_by(order)
+        if category:
+            query = query.filter(lambda p:p["categories"].contains(category))
+        if author:
+            query = query.filter({"author": author})
+        if language:
+            query = query.filter({"language":language})
+        query.skip((page-1)*per_page)
+        query.limit(per_page)
+
+        return cls.run(query)
+
 
 Person.register()
 Podcast.register()

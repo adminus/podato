@@ -46,14 +46,4 @@ class PodcastQueryResource(Resource):
     def get(self):
         """Query for podcasts."""
         args = queryParser.parse_args()
-        query = Podcast.objects
-        if args.get("order"):
-            query = query.order_by(args.get('order'))
-        if args.get("category"):
-            query = query.filter(categories=args.get("category"))
-        if args.get("author"):
-            query = query.filter(author=args.get("author"))
-        if args.get("language"):
-            query = query.filter(language=args.get("language"))
-
-        return query.paginate(page=args["page"], per_page=args["per_page"]).items
+        return Podcast.query(**args)
