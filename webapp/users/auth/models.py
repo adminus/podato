@@ -1,7 +1,7 @@
 import logging
 
 from flask import abort
-from webapp.db import Model
+from webapp.db import Model, r
 
 from webapp.users.auth import facebook_api
 from webapp.users.auth.providers import TwitterProvider
@@ -14,6 +14,7 @@ class ProvidedIdentity(Model):
         self.user_id=user_id
         self.access_token = access_token
 
+ProvidedIdentity.register()
 
 class ProviderTokenHolder(object):
     """This is a mixin for User, which stores the auth tokens of 3rd party providers like Facebook or Google"""
@@ -31,11 +32,18 @@ class ProviderTokenHolder(object):
             "provider": provider,
             "user_id": user_id,
             "app_user": self.id
-                                                               })
+        })
+
+        i = 0
         for identity in self.provided_identities:
+            i += 1
             if identity.provider == provider and identity.user_id == user_id:
                 identity.access_token = access_token
-                self.save()
+                self.run(self.table.get(self.id).update(
+                    {
+                        "provided_identities": r.row["provided_identities"].change_at(i, identity.to_dict())
+                    }
+                ))
                 logging.debug("identity already found on user. Updating access token.")
                 return
 
@@ -44,9 +52,9 @@ class ProviderTokenHolder(object):
             user_id=user_id,
             access_token=access_token
         )
-        self.run(self.table.get(self.id).update(
-            lambda user: user["provided_identities"].append(prid.to_dict())
-        ))
+        self.run(self.table.get(self.id).update({
+            "provided_identities": r.row["provided_identities"].append(prid.to_dict())
+        }))
         logging.debug("Added provided identity.")
 
     def get_provider_token(self, provider, user_id=None):
@@ -60,6 +68,7 @@ class ProviderTokenHolder(object):
     @classmethod
     def get_by_provided_identity(cls, provider, user_id):
         """Gets the User associated with the given provided identity."""
+        logging.debug("Trying to get user by provided identity: provider=%s, user_id=%s" % (provider, user_id))
         result = cls.run(cls.get_table().filter(
             lambda user: user["provided_identities"].contains(
                 lambda identity: (identity["provider"] == provider) & (identity["user_id"] == user_id)
@@ -68,7 +77,7 @@ class ProviderTokenHolder(object):
         user = None
         if len(list(result)) > 0:
             user = cls.from_dict(result[0])
-        logging.debug("Tried to get user by provided identity: provider=%s, user_id=%s, user=%s" % (provider, user_id, user))
+        logging.debug("result: %s" % user)
         return user
 
     @classmethod
