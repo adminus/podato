@@ -2,6 +2,7 @@ import md5
 import datetime
 import random
 import logging
+import uuid
 
 from webapp.db import r, Model
 
@@ -18,7 +19,8 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
 
     def __init__(self, id=None, username=None, primary_email=None, email_addresses=None,
                  avatar_url=None, following=None, joined=None, **kwargs):
-        super(User, self).__init__(self, **kwargs)
+        super(User, self).__init__(**kwargs)
+        self.id = id or str(uuid.uuid4())
         self.username = username
         self.primary_email = primary_email
         self.email_addresses = email_addresses or []
@@ -63,7 +65,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         """Returns True if no user with the given username exists, False otherwise"""
         users = cls.run(cls.get_table().get_all(username, index="username").count())
         logging.debug("Checked for the availability of username %s, got %s" % (username, users))
-        return users == None
+        return users == 0
 
     def follow(self, other_user_ids):
         if not isinstance(other_user_idss, list):

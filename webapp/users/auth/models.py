@@ -21,7 +21,7 @@ class ProviderTokenHolder(object):
     attributes = ["provided_identities"]
 
     def __init__(self, provided_identities=None, **kwargs):
-        super(ProviderTokenHolder, self).__init__(self, **kwargs)
+        super(ProviderTokenHolder, self).__init__(**kwargs)
         self.provided_identities = provided_identities or []
 
     def add_provided_identity(self, provider, user_id, access_token):
@@ -60,11 +60,15 @@ class ProviderTokenHolder(object):
     @classmethod
     def get_by_provided_identity(cls, provider, user_id):
         """Gets the User associated with the given provided identity."""
-        user = cls.run(cls.get_table().filter(
+        result = cls.run(cls.get_table().filter(
             lambda user: user["provided_identities"].contains(
                 lambda identity: (identity["provider"] == provider) & (identity["user_id"] == user_id)
             )
         ))
+        user = None
+        if len(list(result)) > 0:
+            user = cls.from_dict(result[0])
+        logging.debug("Tried to get user by provided identity: provider=%s, user_id=%s, user=%s" % (provider, user_id, user))
         return user
 
     @classmethod

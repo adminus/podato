@@ -11,7 +11,7 @@ class SubscriptionHolder(object):
     attributes = ["subscriptions"]
 
     def __init__(self, subscriptions=None, **kwargs):
-        super(SubscriptionHolder, self).__init__(self, **kwargs)
+        super(SubscriptionHolder, self).__init__(**kwargs)
         self.subscriptions = subscriptions or []
 
     def subscribe(self, podcast):

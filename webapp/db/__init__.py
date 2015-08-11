@@ -2,6 +2,7 @@ from flask import g
 from flask import current_app
 
 import rethinkdb as r
+import logging
 
 def get_connection():
     host = current_app.config.get("RETHINKDB_HOST")
@@ -42,12 +43,16 @@ class Model(object):
 
     @classmethod
     def get_attributes(cls):
-        attrs = set()
+        attrs = []
         for sup in cls.__mro__:
             if hasattr(sup, "attributes"):
-                attrs = attrs.union(sup.attributes)
+                attrs = attrs + sup.attributes
 
-        return attrs
+        unique = []
+        for att in attrs:
+            if att not in unique:
+                unique.append(att)
+        return unique
 
     @classmethod
     def __new__(cls, *args, **kwargs):
@@ -70,13 +75,15 @@ class Model(object):
 
         d = {"__type": self._get_type()}
         for attr in self.get_attributes():
-            if hasattr(self, attr):
+            if not hasattr(self, attr):
                 continue
 
             value = getattr(self, attr)
+
+
             if hasattr(value, "to_dict"):
                 value = value.to_dict()
-            if isinstance(value, set, tuple, list):
+            if isinstance(value, (set, tuple, list)):
                 value = [item.to_dict() if hasattr(item, "to_dict") else item for item in value]
 
             d[attr] = value
@@ -118,7 +125,7 @@ class Model(object):
     @classmethod
     def run(cls, query):
         """Runs the given query"""
-        query.run(cls.get_connection())
+        return query.run(cls.get_connection())
 
     @classmethod
     def get(cls, id):
@@ -132,7 +139,12 @@ class Model(object):
     def save(self):
         """Saves the current object"""
         d = self.to_dict()
-        return self.run(self.table.replace(d))
+        logging.debug("saving %s" % d)
+        primary = self.get_attributes()[0]
+        id = getattr(self, primary)
+        res = self.run(self.table.get(id).replace(d))
+        logging.debug("result: %s" % res)
+        return res
 
     def delete(self):
         """Deletes the current object"""
