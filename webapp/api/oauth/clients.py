@@ -3,7 +3,7 @@ This module contains models for oauth clients.
 """
 import logging
 
-from webapp.db import Model
+from webapp.db import Model, r
 
 from flask import current_app
 from flask import url_for
@@ -108,7 +108,7 @@ class Client(Model):
 
     @property
     def redirect_uris(self):
-        rv = self.own_redirect_uris
+        rv = self.own_redirect_urls
         if self.javascript_origins:
             for origin in self.javascript_origins:
                 rv.append(url_for("api.javascript_endpoint", origin=origin, _external=True))
