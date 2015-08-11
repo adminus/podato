@@ -2,6 +2,8 @@ from flask import g
 from flask import current_app
 
 import rethinkdb as r
+
+from datetime import datetime
 import logging
 
 def get_connection():
@@ -79,7 +81,8 @@ class Model(object):
 
             value = getattr(self, attr)
 
-
+            if isinstance(value, datetime):
+                value = value.replace(tzinfo=r.make_timezone("+00:00"))
             if hasattr(value, "to_dict"):
                 value = value.to_dict()
             if isinstance(value, (set, tuple, list)):
@@ -103,6 +106,8 @@ class Model(object):
             clss = cls
 
         for key in d:
+            if isinstance(d[key], datetime):
+                d[key] = d[key].replace(tzinfo=None)
             if isinstance(d[key], dict) and "__type" in d[key]:
                 d[key] = cls.from_dict(d[key])
             if isinstance(d[key], list):
