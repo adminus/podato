@@ -141,7 +141,7 @@ class Logout(Resource):
     @api.doc(id="logout", security=[{"javascript":[]}, {"server":[]}])
     def get(self):
         valid, req = oauth.verify_request([])
-        if not valid or not req.client.app.trusted:
+        if not valid or not req.client.get_app().trusted:
             raise AuthorizationRequired
         session.destroy_session()
         return {"success": True}
