@@ -110,11 +110,15 @@ class BearerToken(BaseToken):
     @classmethod
     def get_by_access_token(cls, access_token):
         """Get a Bearer token by access token."""
-        result = cls.run(cls.get_table().get_ll(access_token, index="access_token"))[0]
-        return cls.from_dict(result)
+        result = cls.run(cls.get_table().get_all(access_token, index="access_token"))
+        if result:
+            return cls.from_dict(result[0])
+        return None
 
     @classmethod
     def get_by_refresh_token(cls, refresh_token):
         """Get a Bearer token by its refresh token."""
-        result = cls.run(cls.get_table().get_ll(refresh_token, index="refresh_token"))[0]
-        return cls.from_dict(result)
+        result = cls.run(cls.get_table().get_all(refresh_token, index="refresh_token"))
+        if result:
+            return cls.from_dict(result[0])
+        return None
