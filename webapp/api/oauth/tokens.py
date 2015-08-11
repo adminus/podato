@@ -1,7 +1,7 @@
 import datetime
 import cPickle
 
-from webapp.db import Model
+from webapp.db import Model, r
 from webapp.users import User
 from webapp import cache
 from clients import Client
@@ -30,7 +30,8 @@ class GrantToken(BaseToken):
         self.code = code
         self.redirect_uri = redirect_uri
         self.scopes = scopes
-        self.expires = expires or datetime.datetime.utcnow() + datetime.timedelta(seconds=120)
+        expires = expires or datetime.datetime.utcnow() + datetime.timedelta(seconds=120)
+        self.expires = expires
 
     @classmethod
     def create(cls, client_id, code, user, redirect_uri, scopes):
@@ -110,15 +111,12 @@ class BearerToken(BaseToken):
     @classmethod
     def get_by_access_token(cls, access_token):
         """Get a Bearer token by access token."""
-        result = cls.run(cls.get_table().get_all(access_token, index="access_token"))
-        if result:
-            return cls.from_dict(result[0])
-        return None
+        return cls.from_dict(cls.get(access_token))
 
     @classmethod
     def get_by_refresh_token(cls, refresh_token):
         """Get a Bearer token by its refresh token."""
-        result = cls.run(cls.get_table().get_all(refresh_token, index="refresh_token"))
+        result = list(cls.run(cls.table.get_all(refresh_token, index="refresh_token")))
         if result:
             return cls.from_dict(result[0])
         return None
