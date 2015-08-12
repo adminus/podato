@@ -132,7 +132,7 @@ class SubscriptionsResource(Resource):
         if not user:
             abort(404, message="User not found.")
             return
-        return user.subscriptions
+        return user.get_subscriptions()
 
 
 @ns.route("/logout", endpoint="logout")

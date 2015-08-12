@@ -88,3 +88,7 @@ class SubscriptionHolder(object):
             return SubscribeResult(id=id)
         else:
             return SubscribeResult(success=True)
+
+    def get_subscriptions(self):
+        res = self.run(Podcast.get_table().get_all(r.args(self.subscriptions)))
+        return [Podcast.from_dict(p) for p in res]
