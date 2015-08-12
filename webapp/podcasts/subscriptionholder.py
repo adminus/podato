@@ -3,7 +3,6 @@ import logging
 from webapp.db import r
 from webapp.podcasts.models import Podcast
 from webapp.podcasts import crawler
-from webapp.async import AsyncSuccess
 
 class SubscribeResult(object):
 
@@ -85,7 +84,7 @@ class SubscriptionHolder(object):
         res = None
         success = None
         if to_fetch:
-            id = crawler.fetch(to_fetch, subscribe=self)
-            return SubscribeResult(id()=id)
+            id = crawler.fetch(to_fetch, subscribe=self).id
+            return SubscribeResult(id=id)
         else:
             return SubscribeResult(success=True)

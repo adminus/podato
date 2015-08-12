@@ -40,13 +40,13 @@ def fetch(url_or_urls, subscribe=None):
         url_or_urls = [url_or_urls]
 
     tasks = []
-    for uri in uri_or_uris:
+    for url in url_or_urls:
         store = _store_podcast.s()
-        task = _fetch_podcast_data.s(uri)
+        task = _fetch_podcast_data.s(url)
         if subscribe:
             store.link(_subscribe_user.s(subscribe))
         task.link(store)
-        tasks.append(taks)
+        tasks.append(task)
 
     return group(tasks).apply_async()
 
@@ -188,7 +188,7 @@ def _parse_explicit(entry):
 def _store_podcast(podcast_data):
     """Given a list of dictionaries representing podcasts, store them all in the database."""
     podcast = Podcast(**podcast_data)
-    Podcast.run(Podcast.get_table().insert(podcast))
+    Podcast.run(Podcast.get_table().insert(podcast.to_dict()))
     return podcast
 
 @app.task

@@ -9,7 +9,7 @@ from webapp.utils import AttributeHider
 from webapp.api.oauth import oauth
 from webapp.api.oauth import AuthorizationRequired
 from webapp.api.blueprint import api
-from webapp.api.representations import user_fields, subscribe_fields, podcast_fields, success_status
+from webapp.api.representations import user_fields, subscribe_fields, podcast_fields, success_status, subscribe_result_fields
 from webapp.users import User
 from webapp.users.auth import session
 
@@ -87,7 +87,7 @@ podcastsParser.add_argument(name="podcast", required=True, location="form")
 @api.doc({"userId": "A user ID, or \"me\" without quotes, for the user associated with the provided access token.", "podcast":"a podcast feed url."})
 class SubscriptionsResource(Resource):
     """Resource representing a user's subscriptions."""
-    @api.marshal_with(success_status)
+    @api.marshal_with(subscribe_result_fields)
     @api.doc(id="subscribe", security=[{"javascript":[]}, {"server":[]}], parser=podcastsParser)
     def post(self, userId):
         """Subscribe the user to a podcast"""

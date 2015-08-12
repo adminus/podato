@@ -47,12 +47,12 @@ class Podcast(Model):
 
     attributes = ["url", "title", "author", "description", "language", "copyright",
                   "image", "categories", "owner", "last_fetched", "previous_urls",
-                  "episodes", "subscribers", "errors"]
+                  "episodes", "subscribers", "errors", "complete"]
 
     def __init__(self, url, title=None, author=None, description=None, language=None,
                  copyright=None, image=None, categories=None, owner=None,
                  last_fetched=None, previous_urls=None, episodes=None,
-                 subscribers=None, errors=None):
+                 subscribers=None, errors=None, complete=None):
 
         self.url = url
         self.title = title
@@ -68,6 +68,7 @@ class Podcast(Model):
         self.episodes = episodes or []
         self.subscribers = subscribers
         self.errors = errors
+        self.complete = complete
 
     @classmethod
     def get_by_url(cls, url):
@@ -87,11 +88,11 @@ class Podcast(Model):
         urls = set(urls)
         d = {}
 
-        podcasts = cls.run(cls.get_table().get_all(r.args(urls)))
+        podcasts = [cls.from_dict(p) for p in cls.run(cls.get_table().get_all(r.args(urls)))]
 
         for pod in podcasts:
             urls.remove(pod.url)
-            d[pod.url] = cls.from_dict(pod)
+            d[pod.url] = pod
 
         moved_podcasts = cls.run(cls.get_table().filter(
             lambda pod: pod["previous_urls"].set_intersection(urls).count() > 0
@@ -118,7 +119,7 @@ class Podcast(Model):
         query.skip((page-1)*per_page)
         query.limit(per_page)
 
-        return cls.run(query)
+        return [cls.from_dict(p) for p in cls.run(query)]
 
 
 Person.register()

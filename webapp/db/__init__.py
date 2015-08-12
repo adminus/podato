@@ -97,7 +97,7 @@ class Model(object):
         """Converts a dictionary back to the class within the application"""
         if not d:
             return None
-        type_ = d.get("__type", None)
+        type_ = d.get("__type")
         del d["__type"]
 
         if type_:
