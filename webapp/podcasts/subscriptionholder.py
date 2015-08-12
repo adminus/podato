@@ -5,6 +5,15 @@ from webapp.podcasts.models import Podcast
 from webapp.podcasts import crawler
 from webapp.async import AsyncSuccess
 
+class SubscribeResult(object):
+
+    def __init__(self, id=None, success=None, progress=None, total=None):
+        self.id = id
+        self.success = success
+        self.progress = progress
+        self.total = total
+
+
 class SubscriptionHolder(object):
     """A mixin to be applied to the User model, which represents the user's subscriptions."""
 
@@ -17,18 +26,19 @@ class SubscriptionHolder(object):
     def subscribe(self, podcast):
         """Subscribe the user to the given podcast."""
         if podcast.url in self.subscriptions:
-            return False
+            return SubscribeResult(success=False)
         self.run(self.table.get(self.id).update(
             lambda user: user["subscriptions"].append(podcast.url)
         ))
-        return True
+        return SubscribeResult(success=True)
 
     def subscribe_by_url(self, url):
         """Subscribe the user to the podcast at the given feed url."""
         podcast = Podcast.get_by_url(url)
         if podcast == None:
-            return AsyncSuccess(async_result=crawler.fetch(url, subscribe=self))
-        return AsyncSuccess(success=self.subscribe(podcast))
+            id = crawler.fetch(url, subscribe=self).id
+            SubscribeResult(id=id)
+        return SubscribeResult(success=self.subscribe(podcast))
 
     def unsubscribe(self, podcast):
         """Unsubscribe the user from the podcast."""
@@ -56,6 +66,7 @@ class SubscriptionHolder(object):
         self.run(self.table.get(self.id).update(
             {"subscriptions": r.row["subscriptions"].set_union(not_already_subscribed)}
         ))
+        return SubscribeResult(success=True)
 
     def subscribe_multi_by_url(self, urls):
         """Subscribe the user to all the podcasts at the given feed urls. urls should be an iterable of strings."""
@@ -74,8 +85,7 @@ class SubscriptionHolder(object):
         res = None
         success = None
         if to_fetch:
-            res = crawler.fetch(to_fetch, subscribe=self)
+            id = crawler.fetch(to_fetch, subscribe=self)
+            return SubscribeResult(id()=id)
         else:
-            success = True
-
-        return AsyncSuccess(async_result=res, success=success)
+            return SubscribeResult(success=True)

@@ -23,4 +23,3 @@ def init_celery(podatoApp):
                 return task_base.__call__(self, *args, **kwargs)
 
     app.Task = TaskWithAppContext
-

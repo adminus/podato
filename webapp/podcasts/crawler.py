@@ -9,7 +9,7 @@ from flask import current_app
 from webapp import utils
 from webapp.podcasts.models import  Podcast, Episode, Person, Enclosure
 from webapp.podcasts import crawl_errors
-from webapp.async import app, chord
+from webapp.async import app, group
 
 from mongoengine.base import fields
 
@@ -30,7 +30,6 @@ class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
 
     http_error_301 = http_error_303 = http_error_307 = http_error_302
 
-@app.task
 def fetch(url_or_urls, subscribe=None):
     """This fetches a (list of) podcast(s) and stores it in the db. It assumes that it only gets called
     by Podcast.get_by_url, or some other method that knows whether a given podcast has
@@ -39,10 +38,17 @@ def fetch(url_or_urls, subscribe=None):
     If *subscribe* is given, it should be a User instance to be subscribed to the given podcasts."""
     if isinstance(url_or_urls, basestring):
         url_or_urls = [url_or_urls]
-    body = _store_podcasts.s()
-    if subscribe:
-        body.link(_subscribe_user.s(user=subscribe))
-    return chord([_fetch_podcast_data.s(url) for url in url_or_urls])(body)
+
+    tasks = []
+    for uri in uri_or_uris:
+        store = _store_podcast.s()
+        task = _fetch_podcast_data.s(uri)
+        if subscribe:
+            store.link(_subscribe_user.s(subscribe))
+        task.link(store)
+        tasks.append(taks)
+
+    return group(tasks).apply_async()
 
 
 @app.task
@@ -179,15 +185,16 @@ def _parse_explicit(entry):
         return 0
 
 @app.task
-def _store_podcasts(podcasts_data):
+def _store_podcast(podcast_data):
     """Given a list of dictionaries representing podcasts, store them all in the database."""
-    podcasts = [Podcast(**pdata) for pdata in podcasts_data]
-    return Podcast.run(Podcast.get_table().insert(podcasts))
+    podcast = Podcast(**podcast_data)
+    Podcast.run(Podcast.get_table().insert(podcast))
+    return podcast
 
 @app.task
-def _subscribe_user(podcasts, user):
+def _subscribe_user(podcast, user):
     """Subscribe the given users to all the podcasts in the list."""
-    return user.subscribe_multi(podcasts)
+    return user.subscribe(podcast)
 
 def _get_or_errors(d, key, errors, error_type, default=None, **error_props):
     error = crawl_errors.CrawlError.create(error_type=error_type, attrs=error_props)
