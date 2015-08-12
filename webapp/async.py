@@ -25,17 +25,6 @@ def init_celery(podatoApp):
     app.Task = TaskWithAppContext
 
 
-@before_task_publish.connect
-def update_sent_state(sender=None, body=None, **kwargs):
-    # the task may not exist if sent using `send_task` which
-    # sends tasks by name, so fall back to the default result backend
-    # if that is the case.
-    task = current_app.tasks.get(sender)
-    backend = task.backend if task else current_app.backend
-    logging.debug("Setting status for %s" % body["id"])
-
-    backend.store_result(body['id'], None, "QUEUED")
-
 class AsyncSuccess(object):
     """This class represents the result of an async operation."""
 
