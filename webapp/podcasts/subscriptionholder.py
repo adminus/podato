@@ -3,6 +3,7 @@ import logging
 from webapp.db import r
 from webapp.podcasts.models import Podcast
 from webapp.podcasts import crawler
+from webapp.async import GroupResult
 
 class SubscribeResult(object):
 
@@ -11,6 +12,19 @@ class SubscribeResult(object):
         self.success = success
         self.progress = progress
         self.total = total
+
+    @classmethod
+    def get(cls, id):
+        """Get a SubscribeResult by its id."""
+        r = GroupResult.restore(id=id)
+        if not r:
+            return None
+        instance = cls(id=id, progress=r.completed_count(), total=len(r.results))
+        if r.successful():
+            instance.success = True
+        if r.failed():
+            instance.success = False
+        return instance
 
 
 class SubscriptionHolder(object):

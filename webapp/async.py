@@ -1,11 +1,15 @@
 from flask import current_app as podatoApp
 from celery import *
+from celery.app.log import Logging
+from celery.result import GroupResult
 from celery.result import ResultBase, AsyncResult
 from celery.signals import before_task_publish
-
 import logging
 
 app = Celery()
+Logging(app).setup(loglevel=logging.DEBUG, redirect_level=logging.DEBUG)
+
+
 def init_celery(podatoApp):
     task_base = app.Task
 
