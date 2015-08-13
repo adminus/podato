@@ -141,8 +141,6 @@ def _make_episode(entry):
                               url=entry.enclosures[0].href
             )
         )
-        if episode.image is None:
-            errors.append(crawl_errors.CrawlError.create(error_type=crawl_errors.NO_IMAGE, attrs={"episode":entry.guid}))
         return episode, errors
     except Exception as e:
         logging.exception("Got an exception while parsing episode: %s." % entry.get("id"))
