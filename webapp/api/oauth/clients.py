@@ -170,7 +170,7 @@ def _load_trusted_clients():
     for client_dict in trusted_clients:
         client = Client.create(app=PODATO_APP.name,
                             name=client_dict["NAME"],
-                            own_redirect_urls=client_dict["REDIRECT_URLS"],
+                            own_redirect_uris=client_dict["REDIRECT_URLS"],
                             id=client_dict["CLIENT_ID"],
                             client_secret=current_app.config[client_dict["NAME"].upper() + "_CLIENT_SECRET"])
         client.default_scopes = current_app.config.get("OAUTH_SCOPES").keys()
