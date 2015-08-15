@@ -37,6 +37,10 @@ class Model(object):
        To specify which attributes should be savied add an 'attributes' class property
        containing a list of property names. The first property name should be the primary key."""
 
+    def __init__(self, **kwargs):
+
+        for name in kwargs:
+            setattr(self, name, kwargs[name])
 
     @classmethod
     def get_connection(cls):

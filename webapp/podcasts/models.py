@@ -8,19 +8,11 @@ class Person(Model):
 
     attributes = ["name", "email"]
 
-    def __init__(self, name=None, email=None):
-        self.name = name
-        self.email = email
-
 
 class Enclosure(Model):
     """Model that represents an enclosure (an episode's file.)"""
 
     attributes = ["url", "type"]
-
-    def __init__(self, url=None, type=None):
-        self.url = url
-        self.type = type
 
 
 class Episode(Model):
@@ -29,18 +21,6 @@ class Episode(Model):
     attributes = ["title", "subtitle", "description", "author", "guid",
                   "published", "image", "duration", "explicit", "enclosure"]
 
-    def __init__(self, title, guid, enclosure, subtitle=None, description=None, author=None, published=None, image=None, duration=None, explicit=None):
-        self.title = title
-        self.guid = guid
-        self.enclosure = enclosure
-        self.subtitle=subtitle
-        self.description = description
-        self.author = author
-        self.published = published,
-        self.image = image
-        self.duration = duration
-        self.explicit = explicit
-
 
 class Podcast(Model):
     """Model that represents a podcast."""
@@ -48,27 +28,6 @@ class Podcast(Model):
     attributes = ["url", "title", "author", "description", "language", "copyright",
                   "image", "categories", "owner", "last_fetched", "previous_urls",
                   "episodes", "subscribers", "errors", "complete"]
-
-    def __init__(self, url, title=None, author=None, description=None, language=None,
-                 copyright=None, image=None, categories=None, owner=None,
-                 last_fetched=None, previous_urls=None, episodes=None,
-                 subscribers=None, errors=None, complete=None):
-
-        self.url = url
-        self.title = title
-        self.author = author
-        self.description = description
-        self.language = language
-        self.copyright = copyright
-        self.image = image
-        self.categories = categories or []
-        self.owner = owner
-        self.last_fetched = last_fetched
-        self.previous_urls = previous_urls or []
-        self.episodes = episodes or []
-        self.subscribers = subscribers
-        self.errors = errors
-        self.complete = complete
 
     @classmethod
     def get_by_url(cls, url):

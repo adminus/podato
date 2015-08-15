@@ -32,10 +32,6 @@ class SubscriptionHolder(object):
 
     attributes = ["subscriptions"]
 
-    def __init__(self, subscriptions=None, **kwargs):
-        super(SubscriptionHolder, self).__init__(**kwargs)
-        self.subscriptions = subscriptions or []
-
     def subscribe(self, podcast):
         """Subscribe the user to the given podcast."""
         if podcast.url in self.subscriptions:

@@ -14,19 +14,8 @@ from webapp import utils
 class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
     """Model that represents a user."""
 
-    attributes = ["id", "username", "primary_email", "email_addresses", "avatar_url",
-                  "following", "joined"]
-
-    def __init__(self, id=None, username=None, primary_email=None, email_addresses=None,
-                 avatar_url=None, following=None, joined=None, **kwargs):
-        super(User, self).__init__(**kwargs)
-        self.id = id or str(uuid.uuid4())
-        self.username = username
-        self.primary_email = primary_email
-        self.email_addresses = email_addresses or []
-        self.avatar_url = avatar_url
-        self.following = following
-        self.joined = joined
+    attributes = {"id", "username", "primary_email", "email_addresses", "avatar_url",
+                  "following", "joined"}
 
     @classmethod
     def create(cls, username, email, avatar_url=None):
@@ -45,10 +34,15 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
             username += random.choice("1234567890")
 
         instance = cls(
+            id=uuid.uuid4(),
             username=utils.strip_control_chars(username),
             primary_email=email,
             email_addresses=emails,
-            avatar_url=avatar_url or "https://gravatar.com/avatar/%s" % email_hash
+            avatar_url=avatar_url or "https://gravatar.com/avatar/%s" % email_hash,
+            following=[],
+            joined=datetime.datetime.now(),
+            provided_identities=[],
+            subscriptions=[]
         )
         return instance
 

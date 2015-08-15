@@ -24,15 +24,6 @@ class GrantToken(BaseToken):
 
     attributes = ["id", "client_id", "code", "user_id", "redirect_uri", "scopes", "expires"]
 
-    def __init__(self, id, client_id, code, user_id, redirect_uri, scopes, expires=None):
-        self.client_id = client_id
-        self.user_id = user_id
-        self.code = code
-        self.redirect_uri = redirect_uri
-        self.scopes = scopes
-        expires = expires or datetime.datetime.utcnow() + datetime.timedelta(seconds=120)
-        self.expires = expires
-
     @classmethod
     def create(cls, client_id, code, user, redirect_uri, scopes):
         """Creates a new GrantToken
@@ -43,6 +34,7 @@ class GrantToken(BaseToken):
         redirect_uri: the uri to be redirected to after access is granted
         scopes: the requested oauth scopes.
         """
+        expires = expires or datetime.datetime.utcnow() + datetime.timedelta(seconds=120)
         instance = cls(
             client_id=client_id,
             user_id=user.id,
@@ -75,15 +67,6 @@ class BearerToken(BaseToken):
 
     attributes = ["access_token", "refresh_token", "client_id", "user_id", "scopes",
                   "expires", "token_type"]
-
-    def __init__(self, access_token, refresh_token, client_id, user_id, scopes=None, expires=None, token_type=None):
-        self.access_token = access_token
-        self.refresh_token = refresh_token
-        self.client_id = client_id
-        self.user_id = user_id
-        self.scopes = scopes
-        self.expires = expires
-        self.token_typ = token_type
 
     @classmethod
     def create(cls, access_token, refresh_token, client, user, expires_in,

@@ -9,10 +9,6 @@ from webapp.users.auth.providers import TwitterProvider
 class ProvidedIdentity(Model):
     attributes = ["provider", "user_id", "access_token"]
 
-    def __init__(self, provider=None, user_id=None, access_token=None):
-        self.provider = provider
-        self.user_id=user_id
-        self.access_token = access_token
 
 ProvidedIdentity.register()
 
@@ -20,10 +16,6 @@ class ProviderTokenHolder(object):
     """This is a mixin for User, which stores the auth tokens of 3rd party providers like Facebook or Google"""
 
     attributes = ["provided_identities"]
-
-    def __init__(self, provided_identities=None, **kwargs):
-        super(ProviderTokenHolder, self).__init__(**kwargs)
-        self.provided_identities = provided_identities or []
 
     def add_provided_identity(self, provider, user_id, access_token):
         # If the user already has an identity from the given platform with the given id,
