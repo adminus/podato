@@ -100,5 +100,8 @@ class SubscriptionHolder(object):
             return SubscribeResult(success=True)
 
     def get_subscriptions(self):
+        """Get the Podcast objects of podcasts the user has subscribed to."""
+        if len(self.subscriptions) == 0:
+            return []
         res = self.run(Podcast.get_table().get_all(r.args(self.subscriptions)))
         return [Podcast.from_dict(p) for p in res]
