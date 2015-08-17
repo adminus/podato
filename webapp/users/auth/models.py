@@ -67,8 +67,9 @@ class ProviderTokenHolder(object):
             )
         ))
         user = None
-        if len(list(result)) > 0:
-            user = cls.from_dict(result[0])
+        resultl = list(result)
+        if len(resultl):
+            user = cls.from_dict(resultl[0])
         logging.debug("result: %s" % user)
         return user
 

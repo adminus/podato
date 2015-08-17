@@ -97,18 +97,18 @@ class Client(Model):
                   "own_redirect_urls", "javascript_origins", "default_scopes"]
 
     @classmethod
-    def create(cls, app, name, own_redirect_uris=None, javascript_origins=None, id=None,
+    def create(cls, app, name, own_redirect_urls=None, javascript_origins=None, id=None,
                client_secret=None, is_confidential=True, default_scopes=None):
         if isinstance(app, Application):
             app = app.name
-        own_redirect_uris = own_redirect_uris or []
+        own_redirect_urls = own_redirect_urls or []
         javascript_origins = javascript_origins or []
         id = id or utils.generate_random_string()
         default_scopes = default_scopes or []
         return cls(
             app=app,
             name=name,
-            own_redirect_uris=own_redirect_uris,
+            own_redirect_urls=own_redirect_urls,
             javascript_origins=javascript_origins,
             id=id,
             client_secret=client_secret,
@@ -170,7 +170,7 @@ def _load_trusted_clients():
     for client_dict in trusted_clients:
         client = Client.create(app=PODATO_APP.name,
                             name=client_dict["NAME"],
-                            own_redirect_uris=client_dict["REDIRECT_URLS"],
+                            own_redirect_urls=client_dict["REDIRECT_URLS"],
                             id=client_dict["CLIENT_ID"],
                             client_secret=current_app.config[client_dict["NAME"].upper() + "_CLIENT_SECRET"])
         client.default_scopes = current_app.config.get("OAUTH_SCOPES").keys()

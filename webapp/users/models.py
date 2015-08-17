@@ -14,8 +14,8 @@ from webapp import utils
 class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
     """Model that represents a user."""
 
-    attributes = {"id", "username", "primary_email", "email_addresses", "avatar_url",
-                  "following", "joined"}
+    attributes = ["id", "username", "primary_email", "email_addresses", "avatar_url",
+                  "following", "joined"]
 
     @classmethod
     def create(cls, username, email, avatar_url=None):
@@ -34,7 +34,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
             username += random.choice("1234567890")
 
         instance = cls(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             username=utils.strip_control_chars(username),
             primary_email=email,
             email_addresses=emails,
