@@ -62,8 +62,8 @@ class SubscriptionHolder(object):
         """Unsubscribe the user from the podcast at the given feed url."""
         podcast = Podcast.get_by_url(url)
         if not podcast:
-            return False
-        return AsyncSuccess(success=self.unsubscribe(podcast))
+            return SubscribeResult(success=False)
+        return SubscribeResult(success=self.unsubscribe(podcast))
 
     def subscribe_multi(self, podcasts):
         """Subscribe the user to multiple podcasts. podcasts should be an iterable of Podcast objects."""
