@@ -32,10 +32,14 @@ const PodcastActions = mcfly.createActions({
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.unsubscribe({userId: "me", podcast: podcastIds}, (resp) => {
-                    resolve({
-                        actionType: constants.actionTypes.UNSUBSCRIBED,
-                        podcasts: podcastIds
-                    });
+                    if (resp.obj.success){
+                        resolve({
+                            actionType: constants.actionTypes.UNSUBSCRIBED,
+                            podcasts: podcastIds
+                        });
+                    }else{
+                        reject(resp);
+                    }
                 });
             });
         });
