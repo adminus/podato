@@ -16,5 +16,6 @@ module.exports = {
         USER_FETCHED: null,
         FOLLOWED: null,
         UNFOLLOWED: null,
+        SUBSCRIBE_PROGRESS: null,
     })
 }
