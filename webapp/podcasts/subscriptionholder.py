@@ -36,8 +36,8 @@ class SubscriptionHolder(object):
         """Subscribe the user to the given podcast."""
         if podcast.url in self.subscriptions:
             return SubscribeResult(success=False)
-        self.run(self.table.get(self.id).update(
-            lambda user: user["subscriptions"].append(podcast.url)
+        self.run(self.table.get(self.id).update({
+            "subscriptions": r.row["subscriptions"].append(podcast.url)
         ))
         return SubscribeResult(success=True)
 
