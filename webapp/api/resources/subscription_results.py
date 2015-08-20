@@ -22,5 +22,5 @@ class SubscriptionResultResource(Resource):
     @api.marshal_with(subscribe_result_fields)
     @api.doc(id="getSubscriptionResult", security=[{"javascript":[]}, {"server":[]}])
     def get(self, resultId):
-        """Get a subscription result.."""
+        """Get a subscription result."""
         return SubscribeResult.get(resultId)
