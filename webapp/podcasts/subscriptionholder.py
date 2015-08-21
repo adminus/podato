@@ -26,6 +26,14 @@ class SubscribeResult(object):
             instance.success = False
         return instance
 
+    def __repr__(self):
+        return "<SubscribeResult id=%s, success=%s, progress=%s, total=%s>" % (
+            self.id, self.success, self.progress, self.total
+        )
+
+    def __str__(self):
+        return repr(self)
+
 
 class SubscriptionHolder(object):
     """A mixin to be applied to the User model, which represents the user's subscriptions."""
