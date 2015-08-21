@@ -81,7 +81,7 @@ class FollowingResource(Resource):
 
 
 podcastsParser = api.parser()
-podcastsParser.add_argument(name="podcast", required=True, location="form")
+podcastsParser.add_argument(name="podcast", required=True, location="args")
 
 @ns.route("/<string:userId>/subscriptions", endpoint="subscriptions")
 @api.doc({"userId": "A user ID, or \"me\" without quotes, for the user associated with the provided access token.", "podcast":"a podcast feed url."})

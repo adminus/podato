@@ -48,7 +48,9 @@ def fetch(url_or_urls, subscribe=None):
         task.link(store)
         tasks.append(task)
 
-    return group(tasks).apply_async()
+    result = group(tasks).apply_async()
+    result.save()
+    return result
 
 
 @app.task

@@ -16,15 +16,50 @@ const PodcastActions = mcfly.createActions({
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.subscribe({userId: "me", podcast:podcastIds}, (resp) => {
-                    API.asyncResultToPromise(resp).then((result) => {
+                    if(resp.obj.success == true){
                         resolve({
                             actionType: constants.actionTypes.SUBSCRIBED,
                             podcasts: podcastIds
                         });
-                    });
+                    }else if(resp.obj.success == false){
+                        reject(resp);
+                    }else{
+                        if(!resp.obj.id){
+                            reject({"errors":"response object has no success property, but no id either."})
+                        }else{
+                            PodcastActions.checkSubscriptionResult(resp.obj.id).then(()=>{
+                                resolve({
+                                    actionType: constants.actionTypes.SUBSCRIBED,
+                                    podcasts: podcastIds
+                                });
+                            });
+                        }
+                    }
                 });
             });
         });
+    },
+    checkSubscriptionResult(id){
+        return new Promise((resolve, reject) => {
+            console.log("Checking for subscription result "+id);
+            api.loaded.then(()=>{
+                api.subscriptionResults.getSubscriptionResult({resultId: id}, (resp) => {
+                    console.log("subscription result:");
+                    console.log(resp.obj);
+                    if(resp.obj.success==true){
+                        resulve({
+                            actionType: constants.actionTypes.SUBSCRIBE_PROGRESS,
+                            total: resp.obj.total,
+                            progress: resp.obj.progress
+                        })
+                    }else if(resp.obj.success==false){
+                        reject(resp);
+                    }else{
+                        PodcastActions.checkSubscriptionResult(id).then(resolve, reject);
+                    }
+                })
+            });
+        })
     },
     unsubscribe(podcastIds){
         if(podcastIds.constructor !== Array){
@@ -34,12 +69,14 @@ const PodcastActions = mcfly.createActions({
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.unsubscribe({userId: "me", podcast: podcastIds}, (resp) => {
-                    API.asyncResultToPromise(resp).then((res) => {
+                    if (resp.obj.success){
                         resolve({
                             actionType: constants.actionTypes.UNSUBSCRIBED,
                             podcasts: podcastIds
                         });
-                    });
+                    }else{
+                        reject(resp);
+                    }
                 });
             });
         });

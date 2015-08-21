@@ -26,6 +26,14 @@ class SubscribeResult(object):
             instance.success = False
         return instance
 
+    def __repr__(self):
+        return "<SubscribeResult id=%s, success=%s, progress=%s, total=%s>" % (
+            self.id, self.success, self.progress, self.total
+        )
+
+    def __str__(self):
+        return repr(self)
+
 
 class SubscriptionHolder(object):
     """A mixin to be applied to the User model, which represents the user's subscriptions."""
@@ -36,8 +44,8 @@ class SubscriptionHolder(object):
         """Subscribe the user to the given podcast."""
         if podcast.url in self.subscriptions:
             return SubscribeResult(success=False)
-        self.run(self.table.get(self.id).update(
-            lambda user: user["subscriptions"].append(podcast.url)
+        self.run(self.table.get(self.id).update({
+            "subscriptions": r.row["subscriptions"].append(podcast.url)
         ))
         return SubscribeResult(success=True)
 
@@ -62,8 +70,8 @@ class SubscriptionHolder(object):
         """Unsubscribe the user from the podcast at the given feed url."""
         podcast = Podcast.get_by_url(url)
         if not podcast:
-            return False
-        return AsyncSuccess(success=self.unsubscribe(podcast))
+            return SubscribeResult(success=False)
+        return SubscribeResult(success=self.unsubscribe(podcast))
 
     def subscribe_multi(self, podcasts):
         """Subscribe the user to multiple podcasts. podcasts should be an iterable of Podcast objects."""

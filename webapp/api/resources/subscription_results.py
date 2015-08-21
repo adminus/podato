@@ -14,11 +14,13 @@ ns = api.namespace("subscriptionResults")
 
 @ns.route("/<string:resultId>", endpoint="subscribeResult")
 @api.doc(params={"resultId": "A subscription result ID,"})
-class UserResource(Resource):
-    """Resource representing a single user."""
+class SubscriptionResultResource(Resource):
+    """Resource representing the result of a podcast subscription request. Such
+    requests may take a while, because we might need to fetch the feed if we
+    don't already have it in the db.."""
 
     @api.marshal_with(subscribe_result_fields)
     @api.doc(id="getSubscriptionResult", security=[{"javascript":[]}, {"server":[]}])
     def get(self, resultId):
-        """Get a subscription result.."""
+        """Get a subscription result."""
         return SubscribeResult.get(resultId)
