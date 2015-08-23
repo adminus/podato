@@ -46,7 +46,7 @@ class SubscriptionHolder(object):
             return SubscribeResult(success=False)
         self.run(self.table.get(self.id).update({
             "subscriptions": r.row["subscriptions"].append(podcast.url)
-        ))
+        }))
         return SubscribeResult(success=True)
 
     def subscribe_by_url(self, url):
