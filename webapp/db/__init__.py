@@ -160,6 +160,15 @@ class Model(object):
         """Deletes the current object"""
         self.run(self.table.get(self.getattr(self.attributes[0])).delete())
 
+    def __repr__(self):
+        class_name = self.__class__.__name__
+        primary_key = self.get_attributes()[0]
+        key_value = getattr(self, primary_key)
+        return "<%s %s=%s>" % (class_name, primary_key, key_value)
+
+    def __str__(self):
+        return repr(self)
+
 
 class ValidationError(Exception):
     pass
