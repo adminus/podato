@@ -105,7 +105,7 @@ def _handle_feed(url, parsed, code):
             "language": _get_or_errors(feed, "language", errors, crawl_errors.NO_LANGUAGE),
             "copyright": parsed.feed.get("rights"),
             "image": _get_or_errors(feed, "image", errors, crawl_errors.NO_IMAGE, default={"href":None})["href"],
-            "categories": [tag["term"] for tag in parsed.feed.get("tags", [{"term": ""}])],
+            "categories": list(set([tag["term"] for tag in parsed.feed.get("tags", [{"term": ""}])])),
             "owner": Person(name=publisher.get("name"),
                             email=publisher.get("email")),
             "last_fetched": datetime.datetime.now(),
