@@ -6,6 +6,8 @@ const Dialog = require("../common/dialog.jsx");
 const CheckboxList = require("../common/checkbox-list.jsx");
 const parseXML = require("../../xml");
 
+const utils = require("../../utils");
+
 const ImportButton = React.createClass({
     render(){
         return (
@@ -57,6 +59,9 @@ const ImportButton = React.createClass({
                 default: true
             });
         }
+        podcasts = utils.naturalSort(podcasts, (podcast) => {
+            return podcast.label;
+        });
         console.log(podcasts);
         this.setState({podcasts: podcasts});
     },
