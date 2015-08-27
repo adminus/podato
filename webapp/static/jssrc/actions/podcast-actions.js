@@ -47,7 +47,7 @@ const PodcastActions = mcfly.createActions({
                     console.log("subscription result:");
                     console.log(resp.obj);
                     if(resp.obj.success==true){
-                        resulve({
+                        resolve({
                             actionType: constants.actionTypes.SUBSCRIBE_PROGRESS,
                             total: resp.obj.total,
                             progress: resp.obj.progress
@@ -55,11 +55,19 @@ const PodcastActions = mcfly.createActions({
                     }else if(resp.obj.success==false){
                         reject(resp);
                     }else{
+                        PodcastActions.reportProgress(resp.obj.progress, res.obj.total);
                         PodcastActions.checkSubscriptionResult(id).then(resolve, reject);
                     }
                 })
             });
         })
+    },
+    reportProgress(progress, total){
+        return {
+            actionType: constants.actionTypes.SUBSCRIBE_PROGRESS,
+            total: resp.obj.total,
+            progress: resp.obj.progress
+        };
     },
     unsubscribe(podcastIds){
         if(podcastIds.constructor !== Array){

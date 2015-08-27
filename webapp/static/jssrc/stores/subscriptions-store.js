@@ -5,12 +5,15 @@ const utils = require("../utils.js");
 var subscriptions = {};
 //When a user subscribes to a podcast, we only store the podcast's url here.
 var subscribed_urls = [];
-
+//a list of user ID's whose subscriptions are currently being fetched.
 var fetching = []
+//progress of a subscription request
+var progress = null;
 
 const SubscriptionsStore = mcfly.createStore({
     getSubscriptions(userId){return subscriptions[userId]},
     isFetchingSubscriptions(userId){return (fetching.indexOf(userId) >= 0)},
+    getProgress(){return progress},
 
     isSubscribedTo(userId, podcast){
         var in_subscriptions = (subscriptions[userId] && subscriptions[userId].filter((p) => {
@@ -40,6 +43,12 @@ const SubscriptionsStore = mcfly.createStore({
             subscribed_urls = subscribed_urls.filter((item) => {
                 return data.podcasts.indexOf(item) < 0;
             });
+            break;
+        case constants.actionTypes.SUBSCRIBE_PROGRESS:
+            progress = data.progress / data.total;
+            if(progress === 1){
+                progress = null;
+            }
             break;
         default:
             return
