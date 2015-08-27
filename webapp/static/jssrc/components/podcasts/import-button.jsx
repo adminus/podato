@@ -1,6 +1,8 @@
 const React = require("react");
 
 const PodcastsActions = require("../../actions/podcast-actions");
+const SubscriptionsStore = require("../../stores/subscriptions-store");
+
 const Spinner = require("../common/spinner.jsx");
 const Dialog = require("../common/dialog.jsx");
 const CheckboxList = require("../common/checkbox-list.jsx");
@@ -9,10 +11,17 @@ const parseXML = require("../../xml");
 const utils = require("../../utils");
 
 const ImportButton = React.createClass({
+    mixins: [SubscriptionsStore.mixin],
     render(){
+        var element;
+        if(this.state.progress == null){
+            element = (<a className="button-transparent" onClick={this.toggleModal}>Import</a>)
+        }else{
+            element = <progress value={this.state.progress} >{this.state.progress}</progress>
+        }
         return (
         <span>
-            <a className="button-transparent" onClick={this.toggleModal}>Import</a>
+            {element}
             <Dialog isOpen={this.state.dialogOpen} title="Import podcasts" onRequestClose={this.toggleModal}>
                 <div className="px2">
                     <p>Export an OPML file from your podcast app. More info on how to do this will be added here soon.</p>
@@ -30,8 +39,14 @@ const ImportButton = React.createClass({
     getInitialState(){
         return {
             dialogOpen: false,
-            podcasts: []
+            podcasts: [],
+            progress: null
         }
+    },
+    storeDidChange(){
+        this.setState({
+            progress: SubscriptionsStore.getProgress()
+        })
     },
     toggleModal(){
         console.log("open:" + this.state.dialogOpen);
