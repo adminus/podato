@@ -81,17 +81,19 @@ class FollowingResource(Resource):
 
 
 podcastsParser = api.parser()
+formPodcastParser = api.parser()
 podcastsParser.add_argument(name="podcast", required=True, location="args")
+formPodcastParser.add_argument(name="podcast", required=True, location="form")
 
 @ns.route("/<string:userId>/subscriptions", endpoint="subscriptions")
 @api.doc({"userId": "A user ID, or \"me\" without quotes, for the user associated with the provided access token.", "podcast":"a podcast feed url."})
 class SubscriptionsResource(Resource):
     """Resource representing a user's subscriptions."""
     @api.marshal_with(subscribe_result_fields)
-    @api.doc(id="subscribe", security=[{"javascript":[]}, {"server":[]}], parser=podcastsParser)
+    @api.doc(id="subscribe", security=[{"javascript":[]}, {"server":[]}], parser=formPodcastParser)
     def post(self, userId):
         """Subscribe the user to a podcast"""
-        podcasts = podcastsParser.parse_args()["podcast"].split(",")
+        podcasts = formPodcastParser.parse_args()["podcast"].split(",")
         if userId == "me":
             valid, req = oauth.verify_request([])
             if not valid:
