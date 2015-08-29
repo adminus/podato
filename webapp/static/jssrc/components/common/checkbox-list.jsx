@@ -5,9 +5,11 @@ const CheckboxList = React.createClass({
         var self = this;
         var items = this.props.data.map(function(data){
             return (
-                <li key={"cb"+data.key} className="p1 border-bottom border-silver">
-                    <input type="checkbox" defaultChecked={data.default} ref={data.key} name={data.key} id={data.key} className="field" onChange={self.handleChange}/>
-                    <label htmlFor={data.key} className="ml1">{data.label}</label>
+                <li key={"cb"+data.key} className="border-bottom border-silver">
+                    <label htmlFor={data.key} className="block p1 hover-darken">
+                        <input type="checkbox" defaultChecked={data.default} ref={data.key} name={data.key} id={data.key} className="field" onChange={self.handleChange}/>
+                        <span className="ml1">{data.label}</span>
+                    </label>
                 </li>
             )
         });

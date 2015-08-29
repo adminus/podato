@@ -5,6 +5,13 @@ Well, it does have a .hide class, but that's used for hiding something visually,
     display: none !important;
 }
 
+/*custom classes*/
+
+.hover-darken:hover{
+    background-color: #EEE;
+}
+
+/* React Modal stylinh. */
 .ReactModal__Overlay {
       background-color: rgba(0, 0, 0, 0.75);
       z-index:1000;
