@@ -17,6 +17,7 @@ const PodcastActions = mcfly.createActions({
             api.loaded.then(() => {
                 api.users.subscribe({userId: "me", podcast:podcastIds}, (resp) => {
                     if(resp.obj.success == true){
+                        PodcastActions.fetchSubscriptions("me")
                         resolve({
                             actionType: constants.actionTypes.SUBSCRIBED,
                             podcasts: podcastIds
@@ -28,6 +29,7 @@ const PodcastActions = mcfly.createActions({
                             reject({"errors":"response object has no success property, but no id either."})
                         }else{
                             PodcastActions.checkSubscriptionResult(resp.obj.id).then(()=>{
+                                PodcastActions.fetchSubscriptions("me")
                                 resolve({
                                     actionType: constants.actionTypes.SUBSCRIBED,
                                     podcasts: podcastIds
@@ -82,6 +84,7 @@ const PodcastActions = mcfly.createActions({
                             actionType: constants.actionTypes.UNSUBSCRIBED,
                             podcasts: podcastIds
                         });
+                        PodcastActions.fetchSubscriptions("me");
                     }else{
                         reject(resp);
                     }
