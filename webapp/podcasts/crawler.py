@@ -68,7 +68,7 @@ def _fetch_podcast_data(url):
         return {"url": url,"errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.UNKNOWN_ERROR, attrs={"error": str(e)})]}
     return _handle_feed(url, parsed, getattr(resp, "status", resp.getcode()))
 
-def _handle_feed(url, parsed, code):
+def _handle_feed(url, parsed):
     """Handles the parsed result of a feed, putting it into a dict for storage."""
     previous_url = None
     logging.info("response_code: %s" % code)
