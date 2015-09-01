@@ -1,6 +1,7 @@
+import logging
+
 from webapp.db import Model, r
-
-
+from webapp.podcasts import error_store
 from crawl_errors import CrawlError
 
 class Person(Model):
@@ -46,16 +47,36 @@ class Podcast(Model):
         )
 
     @classmethod
-    def get_by_url(cls, url):
-        """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
+    def get_by_url(cls, url, fetch=False):
+        """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned.
+        If fetch is set to True, we will attempt to fetch the podcast if we don't find it."""
+        logging.debug("Retrieving podcast: %s" % url)
         p = cls.get(url)
-        if not p:
-            p = cls.run(cls.get_table().filter(
-                lambda podcast: podcast["previous_urls"].contains(url)
-            ))[0]
-
         if p:
-            return cls.from_dict(p)
+            logging.debug("found it.")
+            return p
+        logging.debug("Checking if it might have moved.")
+        res = list(cls.run(cls.get_table().filter(
+            lambda podcast: podcast["previous_urls"].contains(url)
+        )))
+
+        if res:
+            logging.debug("found it.")
+            return cls.from_dict(res[0])
+
+        elif fetch:
+            logging.debug("Not in the database, need to fetch.")
+            code = error_store.get_error(url)
+            if code:
+                logging.debug("Refusing to fetch, because we've encountered an error recently: %s" % code)
+                return None
+
+            # Doing this import inside a function to avoid circular import.
+            from webapp.podcasts import crawler
+            results = list(crawler.fetch(url).results[0].collect())
+            logging.debug("Fetched, got %s." % results)
+            return cls.get_by_url(url)
+        return None
 
     @classmethod
     def delete_by_url(cls):

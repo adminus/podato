@@ -97,10 +97,10 @@ class Model(object):
             return cls._prepare_dict(value)
         if isinstance(value, (set, tuple, list)):
             return [cls.prepare_value(item) for item in value]
-        elif not isinstance(value, (basestring, int, float, long, bool)):
+        elif not isinstance(value, (basestring, int, float, long, bool)) and value is not None:
             raise ValueError("Values must either implement to_dict, or be of"
-                             "type dict, set, tuple, list, basestring, int,"
-                             "float long or datetime, got %s: %s" % type(value), value)
+                             "type dict, set, tuple, list, basestring, int, "
+                             "float, long, datetime or None, got %s: %s" % (type(value), value))
         return value
 
     @classmethod

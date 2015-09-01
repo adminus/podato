@@ -15,16 +15,20 @@ from webapp.podcasts import Podcast
 
 ns = api.namespace("podcasts")
 
+parser = api.parser()
+parser.add_argument(name="fetch", required=False, location="args", type=bool)
+
 @ns.route("/<path:podcastId>", endpoint="podcast")
 @api.doc(params={"podcastId":"A podcast's id (the same as its URL. If the API returns a podcast with a different URL, it means the podcast has moved."})
 class PodcastResource(Resource):
     """Resource that represents a podcast."""
     @api.marshal_with(podcast_full_fields)
-    @api.doc(id="getPodcast")
+    @api.doc(id="getPodcast", parser=parser)
     def get(self, podcastId):
         """Get a podcast by id."""
+        fetch = parser.parse_args().get("fetch")
         podcastId = urllib.unquote(podcastId)
-        podcast = Podcast.get_by_url(podcastId)
+        podcast = Podcast.get_by_url(podcastId, fetch=fetch)
         if podcast == None:
             abort(404, message="Podcast not found: %s" % podcastId)
         return podcast

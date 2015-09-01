@@ -11,7 +11,7 @@ from webapp import utils
 from webapp.podcasts.models import  Podcast, Episode, Person, Enclosure
 from webapp.podcasts import crawl_errors
 from webapp.podcasts import error_store
-from webapp.async import app, group
+from webapp.async import app, group, chain
 
 
 PODATO_USER_AGENT = "Podato Crawler"
@@ -31,12 +31,10 @@ def fetch(url_or_urls, subscribe=None):
 
     tasks = []
     for url in url_or_urls:
-        store = _store_podcast.s()
-        task = _fetch_podcast_data.s(url)
+        chain_ = [_fetch_podcast_data.s(url), _store_podcast.s()]
         if subscribe:
-            store.link(_subscribe_user.s(subscribe))
-        task.link(store)
-        tasks.append(task)
+            chain_.append(_subscribe_user.s(subscribe))
+        tasks.append(chain(chain_))
 
     result = group(tasks).apply_async()
     result.save()
@@ -47,8 +45,8 @@ def update_podcasts():
 
 
 @app.task
-def _update_podcasts()
-    to_update = Podcast.get_update_needed()@
+def _update_podcasts():
+    to_update = Podcast.get_update_needed()
     for podcast in to_update:
         _update_podcast.apply_async(url=podcast.url)
 
@@ -83,7 +81,7 @@ http.force_exception_to_status_code = True
 def _fetch_podcast_data(url):
     utils.validate_url(url, allow_hash=False)
     try:
-        error_code = error_store.get_error(url):
+        error_code = error_store.get_error(url)
         if error_code:
             logging.info("Won't fetch %s, since we got a %s response recently." % (url, error_code))
             return
