@@ -30,6 +30,21 @@ class Podcast(Model):
                   "episodes", "subscribers", "errors", "complete"]
 
     @classmethod
+    def get_update_needed(cls):
+        """Returns an iterable of podcasts that need to be updated. It is only
+        guaranteed to return the 'url' property for each podcast."""
+        return cls.run(
+            cls.get_table().filter(lambda p:
+                                   p.last_fetched.during(r.now(), r.now() - 1800)
+            ).pluck("url    ")
+        )
+
+    def update(self, data):
+        return self.run(
+            self.table.get(self.url).update(data)
+        )
+
+    @classmethod
     def get_by_url(cls, url):
         """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
         p = cls.get(url)
@@ -40,6 +55,13 @@ class Podcast(Model):
 
         if p:
             return cls.from_dict(p)
+
+    @classmethod
+    def delete_by_url(cls):
+        """Delete the podcast at the given url."""
+        return cls.run(
+            cls.get_table().get(url).delete()
+        )
 
     @classmethod
     def get_multi_by_url(cls, urls=[]):

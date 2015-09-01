@@ -41,6 +41,36 @@ def fetch(url_or_urls, subscribe=None):
     result.save()
     return result
 
+def update_podcasts():
+    _update_podcasts.apply_async()
+
+
+@app.task
+def _update_podcasts()
+    to_update = Podcast.get_update_needed()
+    for podcast in to_update:
+        _update_podcast.apply_async(url=podcast.url)
+
+
+@app.task
+def _update_podcast(url):
+    data = _fetch_podcast_data(url)
+    if data["url"] != url:
+        _handle_moved_podcast(url, data)
+        return
+    _make_updates(url, data)
+
+
+def _handle_moved_podcast(previous_url, data):
+    Podcast.delete_by_url(url)
+    _store_podcast(data)
+
+
+def _make_updates(url, data):
+    podcast = Podcast.get_by_url(url)
+    data["previous_urls"] = list(set(podcast.previous_urls()).union(data["previous_urls"]))
+    podcast.update(data)
+
 
 http = httplib2.Http()
 http.force_exception_to_status_code = True
