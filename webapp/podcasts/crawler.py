@@ -10,6 +10,7 @@ httplib2 = import_patched("httplib2")
 from webapp import utils
 from webapp.podcasts.models import  Podcast, Episode, Person, Enclosure
 from webapp.podcasts import crawl_errors
+from webapp.podcasts import error_store
 from webapp.async import app, group
 
 
@@ -47,7 +48,7 @@ def update_podcasts():
 
 @app.task
 def _update_podcasts()
-    to_update = Podcast.get_update_needed()
+    to_update = Podcast.get_update_needed()@
     for podcast in to_update:
         _update_podcast.apply_async(url=podcast.url)
 
@@ -55,6 +56,8 @@ def _update_podcasts()
 @app.task
 def _update_podcast(url):
     data = _fetch_podcast_data(url)
+    if not data:
+        return
     if data["url"] != url:
         _handle_moved_podcast(url, data)
         return
@@ -80,14 +83,37 @@ http.force_exception_to_status_code = True
 def _fetch_podcast_data(url):
     utils.validate_url(url, allow_hash=False)
     try:
+        error_code = error_store.get_error(url):
+        if error_code:
+            logging.info("Won't fetch %s, since we got a %s response recently." % (url, error_code))
+            return
+
         headers = {"User-Agent": current_app.config["USER_AGENT"]}
         logging.info("fetching %s" % url)
         resp, body = http.request(url, headers=headers)
+
+        if resp.status != 200:
+            logging.info("Received an error (%s) when trying to fetch %s" % (url, resp.status))
+            _handle_error_response(resp)
+            return
         parsed = feedparser.parse(body)
     except Exception as e:
         logging.exception("Exception raised trying to fetch %s" % url)
-        return {"url": url,"errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.UNKNOWN_ERROR, attrs={"error": str(e)})]}
+        return
     return _handle_feed(parsed, resp)
+
+
+def _handle_error_response(response):
+    if response.previous:
+        status = response.status
+        urls = []
+        while response is not None:
+            urls.append(response["content-location"])
+            response = response.previous
+        error_store.store_error(urls, status)
+    else:
+        error_store.store_error(response["content-location"], response.status)
+
 
 def _handle_feed(parsed, http_response):
     """Handles the parsed result of a feed, putting it into a dict for storage."""
@@ -200,6 +226,8 @@ def _parse_explicit(entry):
 @app.task
 def _store_podcast(podcast_data):
     """Given a list of dictionaries representing podcasts, store them all in the database."""
+    if not podcast_data:
+        return
     podcast = Podcast(**podcast_data)
     podcast.save()
     return podcast
@@ -207,9 +235,22 @@ def _store_podcast(podcast_data):
 @app.task
 def _subscribe_user(podcast, user):
     """Subscribe the given users to all the podcasts in the list."""
-    return user.subscribe(podcast)
+    if podcast:
+        return user.subscribe(podcast)
 
 def _get_or_errors(d, key, errors, error_type, default=None, **error_props):
+    """Gets the value at the given key from dictionary 'd' if it is present, otherwise
+    appends an error to 'errors', with the given value
+
+    arguments:
+      - d: the dictionary to access
+      - key: the key to get
+      - errors: a lis of errors to append to
+      - error_type: the error type to append when the key is not present
+      - tdefault: the default value to return when there's no value for the given key.
+        An error will still be appended if the default value is returned.
+      - **error_props: properties to be stored with the error.
+    """
     error = crawl_errors.CrawlError.create(error_type=error_type, attrs=error_props)
     try:
         not_found = "COULD+NOT+ACCESS"
