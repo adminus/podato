@@ -36,8 +36,8 @@ class Podcast(Model):
         guaranteed to return the 'url' property for each podcast."""
         return [cls.from_dict(p) for p in cls.run(
             cls.get_table().filter(lambda p:
-                                   p.last_fetched.during(r.now(), r.now() - 1800)
-            ).pluck("url")
+                                   p["last_fetched"] < (r.now() - 1800)
+            ).pluck("url", "__type")
         )]
 
     def update(self, data):
@@ -79,7 +79,7 @@ class Podcast(Model):
         return None
 
     @classmethod
-    def delete_by_url(cls):
+    def delete_by_url(cls, url):
         """Delete the podcast at the given url."""
         return cls.run(
             cls.get_table().get(url).delete()

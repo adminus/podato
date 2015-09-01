@@ -47,8 +47,11 @@ def update_podcasts():
 @app.task
 def _update_podcasts():
     to_update = Podcast.get_update_needed()
+    i = 1
     for podcast in to_update:
-        _update_podcast.apply_async(url=podcast.url)
+        print "Updating the %snd podcast" % i
+        i += 1
+        _update_podcast.s(url=podcast.url).apply_async()
 
 
 @app.task
@@ -63,13 +66,13 @@ def _update_podcast(url):
 
 
 def _handle_moved_podcast(previous_url, data):
-    Podcast.delete_by_url(url)
+    Podcast.delete_by_url(previous_url)
     _store_podcast(data)
 
 
 def _make_updates(url, data):
     podcast = Podcast.get_by_url(url)
-    data["previous_urls"] = list(set(podcast.previous_urls()).union(data["previous_urls"]))
+    data["previous_urls"] = list(set(podcast.previous_urls).union(data["previous_urls"]))
     podcast.update(data)
 
 
