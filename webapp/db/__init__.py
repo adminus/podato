@@ -82,19 +82,30 @@ class Model(object):
         for attr in self.get_attributes():
             if not hasattr(self, attr):
                 continue
-
-            value = getattr(self, attr)
-
-            if isinstance(value, datetime):
-                value = value.replace(tzinfo=r.make_timezone("+00:00"))
-            if hasattr(value, "to_dict"):
-                value = value.to_dict()
-            if isinstance(value, (set, tuple, list)):
-                value = [item.to_dict() if hasattr(item, "to_dict") else item for item in value]
-
-            d[attr] = value
-
+            d[attr] = getattr(self, attr)
+        d = self.prepare_value(d)
         return d
+
+    @classmethod
+    def prepare_value(cls, value):
+        """Ensures that a value can be written to the database."""
+        if isinstance(value, datetime):
+            return value.replace(tzinfo=r.make_timezone("+00:00"))
+        if hasattr(value, "to_dict"):
+            value = value.to_dict()
+        if isinstance(value, dict):
+            return cls._prepare_dict(value)
+        if isinstance(value, (set, tuple, list)):
+            return [cls.prepare_value(item) for item in value]
+        return value
+
+    @classmethod
+    def _prepare_dict(cls, d):
+        """Given a dictionary, this method ensures that it is ready to be written to the database."""
+        result = {}
+        for key in d:
+            result[key] = cls.prepare_value(d[key])
+        return result
 
     @classmethod
     def from_dict(cls, d):
