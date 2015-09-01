@@ -3,15 +3,14 @@ import time
 import logging
 
 import feedparser
-from eventlet.green import urllib2
+from eventlet import import_patched
 from flask import current_app
+httplib2 = import_patched("httplib2")
 
 from webapp import utils
 from webapp.podcasts.models import  Podcast, Episode, Person, Enclosure
 from webapp.podcasts import crawl_errors
 from webapp.async import app, group
-
-from mongoengine.base import fields
 
 
 PODATO_USER_AGENT = "Podato Crawler"
@@ -19,16 +18,6 @@ PODATO_USER_AGENT = "Podato Crawler"
 class FetchError(Exception):
     pass
 
-class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
-    def http_error_302(self, req, fp, code, msg, headers):
-        result = urllib2.HTTPRedirectHandler.http_error_302(self, req, fp,
-                                                                 code, msg,
-                                                                 headers)
-        result.status = code
-        result.headers = headers
-        return result
-
-    http_error_301 = http_error_303 = http_error_307 = http_error_302
 
 def fetch(url_or_urls, subscribe=None):
     """This fetches a (list of) podcast(s) and stores it in the db. It assumes that it only gets called
@@ -53,37 +42,25 @@ def fetch(url_or_urls, subscribe=None):
     return result
 
 
+http = httplib2.Http()
+http.force_exception_to_status_code = True
+
+
 @app.task
 def _fetch_podcast_data(url):
     utils.validate_url(url, allow_hash=False)
     try:
-        request = urllib2.Request(url)
-        opener = urllib2.build_opener(SmartRedirectHandler)
-        request.add_header('User-Agent', current_app.config["USER_AGENT"])
+        headers = {"User-Agent": current_app.config["USER_AGENT"]}
         logging.info("fetching %s" % url)
-        resp = opener.open(request)
-        parsed = feedparser.parse(resp)
+        resp, body = http.request(url, headers=headers)
+        parsed = feedparser.parse(body)
     except Exception as e:
         logging.exception("Exception raised trying to fetch %s" % url)
         return {"url": url,"errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.UNKNOWN_ERROR, attrs={"error": str(e)})]}
-    return _handle_feed(url, parsed, getattr(resp, "status", resp.getcode()))
+    return _handle_feed(parsed, resp)
 
-def _handle_feed(url, parsed):
+def _handle_feed(parsed, http_response):
     """Handles the parsed result of a feed, putting it into a dict for storage."""
-    previous_url = None
-    logging.info("response_code: %s" % code)
-    if code == 404:
-        return {"url": url, "errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.NOT_FOUND)]}
-    if code == 401:
-        return {"url": url, "errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.ACCESS_DENIED)]}
-    elif code == 410:
-        return {"url": url, "errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.GONE)]}
-    elif code == 301: # Permanent redirect
-        previous_url = url
-    elif code == 304: # Not modified
-        return {"url": url}
-    elif code not in [200, 302, 303, 307]:
-        return {"url": url, "errors": [crawl_errors.CrawlError.create(error_type=crawl_errors.UNKNOWN_ERROR, attrs={"code":code})]}
 
     try:
         errors = []
@@ -95,10 +72,17 @@ def _handle_feed(url, parsed):
             if episode:
                 episodes.append(episode)
 
+        url = http_response["content-location"]
+        previous_urls = []
+        r = http_response
+        while r.previous is not None:
+            previous_urls.append(r.previous["content-location"])
+            r = r.previous
+
         feed = parsed.feed
         publisher = _get_or_errors(feed, "author_detail", errors, crawl_errors.NO_OWNER) or {}
         d = {
-            "url": parsed.href,
+            "url": url,
             "title": _get_or_errors(feed, "title", errors, crawl_errors.NO_TITLE),
             "author": _get_or_errors(feed, "author", errors, crawl_errors.NO_AUTHOR),
             "description": _get_or_errors(feed, "description", errors, crawl_errors.NO_DESCRIPTION),
@@ -111,10 +95,9 @@ def _handle_feed(url, parsed):
             "last_fetched": datetime.datetime.now(),
             "complete": parsed.feed.get("itunes_complete") or False,
             "episodes": episodes,
-            "errors": errors
+            "errors": errors,
+            "previous_urls": previous_urls
         }
-        if previous_url:
-            d["previous_urls"] = [previous_url]
         return d
     except Exception as e:
         logging.exception("Encountered an exception while parsing %s" % (parsed.href))
