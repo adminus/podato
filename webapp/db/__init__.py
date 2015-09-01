@@ -26,7 +26,7 @@ def close_connection(exception):
         conn.close()
 
 # A dictionary that maps type names (as returned by Model._get_type()) to classes.
-TYPE_RERISTRY = {}
+TYPE_REGISTRY = {}
 
 class Model(object):
     """A superclass to be used for database models. It has utilities to get a
@@ -63,7 +63,7 @@ class Model(object):
     @classmethod
     def register(cls):
         """Registers a model's type."""
-        TYPE_RERISTRY[cls._get_type()] = cls
+        TYPE_REGISTRY[cls._get_type()] = cls
 
     def to_dict(self):
         """Turn this object into a dicionary. To determine which attributes to
@@ -116,7 +116,7 @@ class Model(object):
         del d["__type"]
 
         if type_:
-            clss = TYPE_RERISTRY[type_]
+            clss = TYPE_REGISTRY[type_]
         else:
             clss = cls
 
