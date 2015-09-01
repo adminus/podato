@@ -33,13 +33,14 @@ class Podcast(Model):
     def get_update_needed(cls):
         """Returns an iterable of podcasts that need to be updated. It is only
         guaranteed to return the 'url' property for each podcast."""
-        return cls.run(
+        return [cls.from_dict(p) for p in cls.run(
             cls.get_table().filter(lambda p:
                                    p.last_fetched.during(r.now(), r.now() - 1800)
-            ).pluck("url    ")
-        )
+            ).pluck("url")
+        )]
 
     def update(self, data):
+        data = self.prepare_value(data)
         return self.run(
             self.table.get(self.url).update(data)
         )
