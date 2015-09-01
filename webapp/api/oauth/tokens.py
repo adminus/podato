@@ -94,7 +94,7 @@ class BearerToken(BaseToken):
     @classmethod
     def get_by_access_token(cls, access_token):
         """Get a Bearer token by access token."""
-        return cls.from_dict(cls.get(access_token))
+        return cls.get(access_token)
 
     @classmethod
     def get_by_refresh_token(cls, refresh_token):

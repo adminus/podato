@@ -155,7 +155,7 @@ class Model(object):
     @classmethod
     def get(cls, id):
         """Get an object by its id."""
-        return cls.run(cls.get_table().get(id))
+        return cls.from_dict(cls.run(cls.get_table().get(id)))
 
     @property
     def table(self):

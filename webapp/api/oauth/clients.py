@@ -75,7 +75,7 @@ class Application(Model):
 
     @classmethod
     def get_by_name(cls, name):
-        return cls.from_dict(cls.get(name))
+        return cls.get(name)
 
 Application.register()
 
