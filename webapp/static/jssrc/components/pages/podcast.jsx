@@ -1,4 +1,6 @@
 const React = require("react");
+const ListenerMixin = require("alt/mixins/ListenerMixin");
+
 
 const Page = require("../common/page.jsx");
 const Image = require("../common/image.jsx");
@@ -11,7 +13,7 @@ const PodcastsStore = require("../../stores/podcasts-store");
 const PodcastsActions = require("../../actions/podcast-actions");
 
 const Podcast = React.createClass({
-    mixins: [CurrentUserStore.mixin, PodcastsStore.mixin],
+    mixins: [ListenerMixin],
     contextTypes: {router: React.PropTypes.func},
     render(){
         var episodes = this.getEpisodes();
@@ -49,7 +51,7 @@ const Podcast = React.createClass({
         return eps;
     },
     getInitialState(){
-        return {currentUser: CurrentUserStore.getCurrentUser(), podcast:{
+        return {currentUser: CurrentUserStore.getState().currentUser, podcast:{
             title: "Loading ...",
             image: "https://podato.herokuapp.com/img/logo.png",
             episodes: []
@@ -57,17 +59,19 @@ const Podcast = React.createClass({
     },
     componentWillMount(){
         this.setPodcast();
+        this.listenTo(PodcastsStore, this.storeDidChange);
+        this.listenTo(CurrentUserStore, this.storeDidChange);
     },
     componentWillReceiveProps(){
         this.setPodcast();
     },
     storeDidChange(){
-        this.setState({currentUser:CurrentUserStore.getCurrentUser()});
+        this.setState({currentUser:CurrentUserStore.getState().currentUser});
         this.setPodcast();
     },
     setPodcast(){
         var podcastId = this.context.router.getCurrentParams().splat;
-        var podcast = PodcastsStore.getPodcast(decodeURIComponent(podcastId));
+        var podcast = PodcastsStore.getInstance().getPodcast(decodeURIComponent(podcastId));
 
         if (!podcast){
             PodcastsActions.fetchPodcast(podcastId);

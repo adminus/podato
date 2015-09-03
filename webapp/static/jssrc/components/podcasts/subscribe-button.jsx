@@ -1,4 +1,5 @@
 const React = require("react");
+const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const PodcastsActions = require("../../actions/podcast-actions");
 const CurrentUserStore = require("../../stores/current-user-store");
@@ -6,7 +7,7 @@ const SubscriptionsStore = require("../../stores/subscriptions-store");
 const Spinner = require("../common/spinner.jsx");
 
 const SubscribeButton = React.createClass({
-    mixins: [CurrentUserStore.mixin, SubscriptionsStore.mixin],
+    mixins: [ListenerMixin],
     render(){
         if(!this.state.user) return (<span>Log in to subscribe.</span>);
         if(!this.state.userSubscriptions){
@@ -30,10 +31,10 @@ const SubscribeButton = React.createClass({
     },
     makeState(){
         return {
-            user: CurrentUserStore.getCurrentUser(),
-            userSubscriptions: SubscriptionsStore.getSubscriptions("me"),
-            fetching: SubscriptionsStore.isFetchingSubscriptions("me"),
-            isSubscribed: SubscriptionsStore.isSubscribedTo("me", this.props.podcast),
+            user: CurrentUserStore.getState().currentUser,
+            userSubscriptions: SubscriptionsStore.getInstance().getSubscriptions("me"),
+            fetching: SubscriptionsStore.getInstance().isFetchingSubscriptions("me"),
+            isSubscribed: SubscriptionsStore.getInstance().isSubscribedTo("me", this.props.podcast),
         }
     },
     getInitialState(){
@@ -51,6 +52,8 @@ const SubscribeButton = React.createClass({
     },
     componentWillMount(){
         PodcastsActions.fetchSubscriptions("me");
+        this.listenTo(CurrentUserStore, this.storeDidChange);
+        this.listenTo(SubscriptionsStore, this.storeDidChange);
     },
     storeDidChange(){
         var newState = this.makeState();

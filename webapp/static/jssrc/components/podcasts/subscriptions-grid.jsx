@@ -1,10 +1,12 @@
 const React = require("react");
+const ListenerMixin = require("alt/mixing/ListenerMiwin");
+
 const PodcastGrid = require("./podcast-grid.jsx");
 const SubscriptionsStore = require("../../stores/subscriptions-store")
 const PodcastsActions = require("../../actions/podcast-actions");
 
 const SubscriptionsGrid = React.createClass({
-    mixins:[SubscriptionsStore.mixin],
+    mixins:[ListenerMixin],
     render(){
         return <PodcastGrid {...this.props} podcasts={this.state.subscriptions}/>
     },
@@ -17,6 +19,9 @@ const SubscriptionsGrid = React.createClass({
     },
     getInitialState(){
         return this.makeState();
+    },
+    componentWillMount(){
+        this.listenTo(SubscriptionsGrid, this.storeDidChange);
     },
     storeDidChange(){
         this.setState(this.makeState());

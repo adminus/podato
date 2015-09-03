@@ -1,4 +1,5 @@
 const React = require("react");
+const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const PodcastsActions = require("../../actions/podcast-actions");
 const SubscriptionsStore = require("../../stores/subscriptions-store");
@@ -11,7 +12,10 @@ const parseXML = require("../../xml");
 const utils = require("../../utils");
 
 const ImportButton = React.createClass({
-    mixins: [SubscriptionsStore.mixin],
+    mixins: [ListenerMixin],
+    componentWillMount(){
+        this.listenTo(SubscriptionsStore, this.storeDidChange);
+    }
     render(){
         var element;
         if(this.state.progress == null){
@@ -45,7 +49,7 @@ const ImportButton = React.createClass({
     },
     storeDidChange(){
         this.setState({
-            progress: SubscriptionsStore.getProgress()
+            progress: SubscriptionsStore.getInstance().getProgress()
         })
     },
     toggleModal(){

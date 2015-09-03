@@ -1,5 +1,6 @@
 const React = require("react");
-var Navigation = require('react-router').Navigation;
+const Navigation = require('react-router').Navigation;
+const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const UsersStore = require("../../stores/users-store");
 const AuthActions = require("../../actions/auth-actions");
@@ -11,7 +12,7 @@ const SubscriptionsGrid = require("../podcasts/subscriptions-grid.jsx")
 const FollowButton = require("../auth/follow-button.jsx")
 
 const User = React.createClass({
-    mixins: [Navigation, UsersStore.mixin],
+    mixins: [Navigation, ListenerMixin],
     contextTypes: {router: React.PropTypes.func},
     render(){
         return (
@@ -44,6 +45,8 @@ const User = React.createClass({
     },
     componentWillMount(){
         this.setUser();
+        this.listenTo(CurrentUserStore, this.storeDidChange);
+        this.listenTo(UsersStore, this.storeDidChange);
     },
     componentWillReceiveProps(){
         this.setUser();
@@ -54,10 +57,10 @@ const User = React.createClass({
     setUser(){
         const userId = this.context.router.getCurrentParams().userId;
         if(userId == "me"){
-            const me = CurrentUserStore.getCurrentUser().id;
+            const me = CurrentUserStore.getState().currentUser.id;
             this.transitionTo("user", {userId: me});
         }
-        var user = UsersStore.getUser(userId);
+        var user = UsersStore.getInstance().getUser(userId);
 
         if (!user){
             AuthActions.fetchUser(userId);

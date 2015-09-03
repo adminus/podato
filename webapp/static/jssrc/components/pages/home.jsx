@@ -1,4 +1,5 @@
 const React = require("react");
+const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const LoginButton = require("../auth/login-button.jsx");
 const PodcastGrid = require("../podcasts/podcast-grid.jsx");
@@ -11,7 +12,7 @@ const SubscriptionsStore = require("../../stores/subscriptions-store");
 const PodcastActions = require("../../actions/podcast-actions");
 
 const Home = React.createClass({
-    mixins: [CurrentUserStore.mixin, PopularPodcastsStore.mixin, SubscriptionsStore.mixin],
+    mixins: [ListenerMixin],
     render(){
         var auth = this.getAuthButtons();
         var subscriptions = this.getSubscriptionsGrid();
@@ -61,6 +62,9 @@ const Home = React.createClass({
     },
     componentWillMount() {
         PodcastActions.fetchPopularPodcasts();
+        this.listenTo(CurrentUserStore, this.storeDidChange);
+        this.listenTo(PopularPodcastsStore, this.storeDidChange);
+        this.listenTo(SubscriptionsStore);
     },
     componentWillReceiveProps() {
         if(CurrentUserStore.getCurrentUser != null){
@@ -72,8 +76,8 @@ const Home = React.createClass({
     },
     storeDidChange(){
         var authState = null;
-        if(CurrentUserStore.getCurrentUser() == null){
-            if (CurrentUserStore.getLoggingIn()) {
+        if(CurrentUserStore.getState().currentUser == null){
+            if (CurrentUserStore.getInstance().getLoggingIn()) {
                 authState = "progress";
             }
         }else{
@@ -84,8 +88,8 @@ const Home = React.createClass({
         }
         this.setState({
             authState: authState,
-            popularPodcasts: PopularPodcastsStore.get(),
-            userSubscriptions: SubscriptionsStore.getSubscriptions("me") || [   ]
+            popularPodcasts: PopularPodcastsStore.getInstance().get(),
+            userSubscriptions: SubscriptionsStore.getInstance().getSubscriptions("me") || [   ]
         });
     }
 });

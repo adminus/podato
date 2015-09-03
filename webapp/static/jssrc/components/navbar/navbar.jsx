@@ -1,11 +1,15 @@
 const React = require("react");
 const Link = require("react-router").Link;
+const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const CurrentUserStore = require("../../stores/current-user-store");
 const AuthActions = require("../../actions/auth-actions");
 
 const Navbar = React.createClass({
-    mixins: [CurrentUserStore.mixin],
+    mixins: [ListenerMixin],
+    componentWillMount(){
+        this.listenTo(CurrentUserStore, this.storeDidChange);
+    }
     render(){
         var logout = ""
         if(this.state.user){
@@ -23,10 +27,10 @@ const Navbar = React.createClass({
         )
     },
     getInitialState(){
-        return {user: CurrentUserStore.getCurrentUser()}
+        return {user: CurrentUserStore.getState().currentUser}
     },
     storeDidChange(){
-        this.setState({user: CurrentUserStore.getCurrentUser()})
+        this.setState({user: CurrentUserStore.getState().currentUser})
     }
 });
 
