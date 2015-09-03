@@ -20,8 +20,9 @@
     "url": "https://github.com/asm-products/podato-web/issues"
   },
   "homepage": "https://github.com/asm-products/podato-web",
-  "devDependencies": {
+  "dependencies": {
     "JSONPath": "^0.10.0",
+    "alt": "^0.17.1",
     "ax": "^0.2.2",
     "babelify": "^6.1.2",
     "browserify": "^9.0.3",
@@ -32,11 +33,11 @@
     "gulp-uglify": "^1.1.0",
     "iconv-lite": "^0.4.7",
     "keymirror": "^0.1.1",
-    "mcfly": "0.0.10",
     "merge": "^1.2.0",
     "moment": "^2.10.3",
     "quote": "^0.4.0",
     "react": "^0.13.1",
+    "react-modal": "^0.2.0",
     "react-router": "^0.13.2",
     "resolve": "^1.1.5",
     "sprintf": "^0.1.5",
@@ -46,8 +47,5 @@
     "through2": "^0.6.3",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.0.0"
-  },
-  "dependencies": {
-    "react-modal": "^0.2.0"
   }
 }

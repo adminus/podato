@@ -1,13 +1,12 @@
-const mcfly = require("../mcfly");
+const flux = require("../flux");
 const api = require("../api");
-const constants = require("../constants");
 
-var transformPodcast = function(podcast){
+var transformPodcast = (podcast) => {
     podcast.encoded_id = encodeURIComponent(podcast.id);
     return podcast;
 }
 
-const PodcastActions = mcfly.createActions({
+const PodcastActions = flux.createActions(class PodcastActions {
     subscribe(podcastIds){
         if(podcastIds.constructor !== Array){
             podcastIds = [podcastIds];
@@ -15,32 +14,27 @@ const PodcastActions = mcfly.createActions({
         heap.track("subscribe", {podcastIds: podcastIds.join(",")})
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
-                api.users.subscribe({userId: "me", podcast:podcastIds}, (resp) => {
+                api.users.subscribe({userId: "me", podcast: podcastIds}, (resp) => {
                     if(resp.obj.success == true){
-                        PodcastActions.fetchSubscriptions("me")
-                        resolve({
-                            actionType: constants.actionTypes.SUBSCRIBED,
-                            podcasts: podcastIds
-                        });
+                        this.actions.fetchSubscriptions("me");
+                        this.dispatch(podcastIds);
                     }else if(resp.obj.success == false){
                         reject(resp);
                     }else{
                         if(!resp.obj.id){
                             reject({"errors":"response object has no success property, but no id either."})
                         }else{
-                            PodcastActions.checkSubscriptionResult(resp.obj.id).then(()=>{
-                                PodcastActions.fetchSubscriptions("me")
-                                resolve({
-                                    actionType: constants.actionTypes.SUBSCRIBED,
-                                    podcasts: podcastIds
-                                });
+                            this.actions.checkSubscriptionResult(resp.obj.id).then(()=>{
+                                this.actions.fetchSubscriptions("me")
+                                this.dispatch(podcastIds);
                             });
                         }
                     }
                 });
             });
         });
-    },
+    }
+
     checkSubscriptionResult(id){
         return new Promise((resolve, reject) => {
             console.log("Checking for subscription result "+id);
@@ -49,49 +43,47 @@ const PodcastActions = mcfly.createActions({
                     console.log("subscription result:");
                     console.log(resp.obj);
                     if(resp.obj.success==true){
-                        resolve({
-                            actionType: constants.actionTypes.SUBSCRIBE_PROGRESS,
-                            total: resp.obj.total,
-                            progress: resp.obj.progress
-                        })
+                        this.actions.reportProgress(rep.obj.progress, resp.obj.total)
+                        resolve()
                     }else if(resp.obj.success==false){
                         reject(resp);
                     }else{
-                        PodcastActions.reportProgress(resp.obj.progress, res.obj.total);
-                        PodcastActions.checkSubscriptionResult(id).then(resolve, reject);
+                        this.actions.reportProgress(resp.obj.progress, resp.obj.total);
+                        this.actions.checkSubscriptionResult(id).then(resolve, reject);
                     }
                 })
             });
         })
-    },
+    }
+
     reportProgress(progress, total){
         return {
-            actionType: constants.actionTypes.SUBSCRIBE_PROGRESS,
-            total: resp.obj.total,
-            progress: resp.obj.progress
+            total: total,
+            progress: progress
         };
-    },
+    }
+
     unsubscribe(podcastIds){
         if(podcastIds.constructor !== Array){
             podcastIds = [podcastIds];
         }
+
         heap.track("subscribe", {podcastIds: podcastIds.join(",")})
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.unsubscribe({userId: "me", podcast: podcastIds}, (resp) => {
                     if (resp.obj.success){
-                        resolve({
-                            actionType: constants.actionTypes.UNSUBSCRIBED,
-                            podcasts: podcastIds
-                        });
-                        PodcastActions.fetchSubscriptions("me");
+                        this.dispatch(podcastIds);
+                        resolve()
+                        this.actions.fetchSubscriptions("me");
                     }else{
                         reject(resp);
                     }
                 });
             });
         });
-    },
+    }
+
     fetchPodcast(podcastId){
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
@@ -100,17 +92,15 @@ const PodcastActions = mcfly.createActions({
                         reject(resp.statusText);
                         return
                     }
-                    resolve({
-                        actionType: constants.actionTypes.PODCAST_FETCHED,
-                        podcast: transformPodcast(resp.obj)
-                    });
+                    this.dispatch(transformPodcast(resp.obj));
                 });
             });
         });
-    },
+    }
+
     fetchSubscriptions(userId){
         userId = userId || "me"
-        PodcastActions.fetchingSubscriptions(userId);
+        this.actions.fetchingSubscriptions(userId);
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.getSubscriptions({userId: userId}, (resp) => {
@@ -118,29 +108,24 @@ const PodcastActions = mcfly.createActions({
                         reject(resp.statusText);
                         return
                     }
-                    resolve({
-                        actionType: constants.actionTypes.SUBSCRIPTIONS_FETCHED,
+                    this.dispatch({
                         userSubscriptions: resp.obj.map(transformPodcast),
                         userId: userId
                     })
                 })
             });
         });
-    },
+    }
+
     fetchingSubscriptions(userId){
-        return {
-            actionType: constants.actionTypes.FETCHING_SUBSCRIPTIONS,
-            userId: userId
-        }
-    },
+        return userId
+    }
+
     fetchPopularPodcasts(){
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.podcasts.query({order:"subscribers"}, (res) => {
-                    resolve({
-                        actionType: constants.actionTypes.POPULAR_PODCASTS_FETCHED,
-                        podcasts: res.obj.map(transformPodcast)
-                    });
+                    this.dispatch(res.obj.map(transformPodcast));
                 });
             });
         });

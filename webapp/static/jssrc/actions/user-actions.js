@@ -1,9 +1,9 @@
-const mcfly = require("../mcfly");
+const flux = require("../flux");
 const api = require("../api");
 const constants = require("../constants");
 
 
-const UserActions = mcfly.createActions({
+const UserActions = flux.createActions(class UserActions {
     follow(userIds){
         if(userIds.constructor !== Array){
             userIds = [userIds];
@@ -12,10 +12,7 @@ const UserActions = mcfly.createActions({
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.follow({userId: "me", otherUser:userIds}, (resp) => {
-                    resolve({
-                        actionType: constants.actionTypes.FOLLOWED,
-                        userIds: userIds
-                    });
+                    this.dispatch(userIds);
                 });
             });
         });
@@ -28,10 +25,7 @@ const UserActions = mcfly.createActions({
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.unfollow({userId: "me", otherUser: userIds}, (resp) => {
-                    resolve({
-                        actionType: constants.actionTypes.UNFOLLOWED,
-                        userIds: userIds
-                    });
+                    this.dispatch(userIds);
                 });
             });
         });

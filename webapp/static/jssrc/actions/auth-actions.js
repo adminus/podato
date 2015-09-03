@@ -1,23 +1,16 @@
-const mcfly = require("../mcfly");
+const flux = require("../flux");
 const api = require("../api");
-const constants = require("../constants");
 
-const AuthActions = mcfly.createActions({
+const AuthActions = flux.createActions(class AuthActions {
+    constructor(){
+        this.generateActions("loggingIn", "loggedIn", "loggedOut", "loginCancelled");
+    }
+
     login(authProvider){
-        return new Promise((resolve, reject) => {
-            api.login(authProvider);
-            AuthActions.loggingIn();
-        });
-    },
-    loggingIn(){
-        return {actionType: constants.actionTypes.LOGGING_IN}
-    },
-    loggedIn(user){
-        return {
-            actionType: constants.actionTypes.LOGGED_IN,
-            user: user
-        };
-    },
+        api.login(authProvider);
+        this.actions.loggingIn();
+    }
+
     logout(){
         heap.track("logout", {})
         API.users.logout({}, (res) => {
@@ -28,30 +21,20 @@ const AuthActions = mcfly.createActions({
         return {
             actionType: constants.actionTypes.LOGGING_OUT
         }
-    },
-    loggedOut(){
-        return {
-            actionType: constants.actionTypes.LOGGED_OUT
-        }
-    },
-    loginCancelled(){
-        return {
-            actionType: constants.actionTypes.LOGIN_CANCELLED
-        }
-    },
+    }
+
     fetchUser(userId){
-        return new Promise((resolve, reject) => {
-            api.loaded.then(() => {
-                api.users.getUser({userId: userId}, (resp) => {
-                    resolve({
-                        actionType: constants.actionTypes.USER_FETCHED,
-                        user: resp.obj
-                    });
+        api.loaded.then(() => {
+            api.users.getUser({userId: userId}, (resp) => {
+                this.dispatch({
+                    actionType: constants.actionTypes.USER_FETCHED,
+                    user: resp.obj
                 });
             });
         });
     }
 });
+
 
 var authListener = () => {
     AuthActions.loggingIn();
