@@ -10,8 +10,7 @@ const FollowButton = React.createClass({
     mixins: [ListenerMixin],
     componentWillMount(){
         this.listenTo(CurrentUserStore, this.storeDidChange);
-    }
-
+    },
     render(){
         if(!this.state.user) return (<span>Log in to subscribe.</span>);
 

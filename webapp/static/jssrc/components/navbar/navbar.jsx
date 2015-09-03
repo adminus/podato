@@ -9,7 +9,7 @@ const Navbar = React.createClass({
     mixins: [ListenerMixin],
     componentWillMount(){
         this.listenTo(CurrentUserStore, this.storeDidChange);
-    }
+    },
     render(){
         var logout = ""
         if(this.state.user){

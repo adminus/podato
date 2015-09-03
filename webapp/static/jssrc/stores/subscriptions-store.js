@@ -26,7 +26,7 @@ const SubscriptionsStore = flux.createStore(class SubscriptionsStore{
 
     getProgress(){
         return this.progress;
-    },
+    }
 
     isSubscribedTo(userId, podcast){
         var in_subscriptions = (this.subscriptions[userId] && this.subscriptions[userId].filter((p) => {

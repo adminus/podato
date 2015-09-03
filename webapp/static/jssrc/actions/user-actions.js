@@ -16,7 +16,8 @@ const UserActions = flux.createActions(class UserActions {
                 });
             });
         });
-    },
+    }
+
     unfollow(userIds){
         if(userIds.constructor !== Array){
             userIds = [userIds];

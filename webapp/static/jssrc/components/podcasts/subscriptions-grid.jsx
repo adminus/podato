@@ -1,5 +1,5 @@
 const React = require("react");
-const ListenerMixin = require("alt/mixing/ListenerMiwin");
+const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const PodcastGrid = require("./podcast-grid.jsx");
 const SubscriptionsStore = require("../../stores/subscriptions-store")

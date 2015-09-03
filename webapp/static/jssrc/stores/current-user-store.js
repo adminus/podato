@@ -41,7 +41,7 @@ const CurrentUserStore = flux.createStore(class {
 
     onFollow(userIds){
         var idObjects = [];
-        for(var i=0; i<userIds.length){
+        for(var i=0; i<userIds.length; i++){
             idObjects.push({id: userIds[i]});
         }
         this.currentUser.following.push(...idObjects);

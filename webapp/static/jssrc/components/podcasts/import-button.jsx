@@ -15,7 +15,7 @@ const ImportButton = React.createClass({
     mixins: [ListenerMixin],
     componentWillMount(){
         this.listenTo(SubscriptionsStore, this.storeDidChange);
-    }
+    },
     render(){
         var element;
         if(this.state.progress == null){
