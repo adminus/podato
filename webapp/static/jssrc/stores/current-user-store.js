@@ -1,60 +1,63 @@
-const mcfly = require("../mcfly");
-const constants = require("../constants");
+const flux = require("../flux");
+const AuthActions = require("../actions/auth-actions");
+const UserActions = require("../actions/user-actions");
 
-var loggingIn = false;
+const CurrentUserStore = flux.createStore(class {
+    constructor(){
+        this.loggingIn = false;
+        this.currentUser = JSON.parse(localStorage.currentUser);
+        this.bindActions(AuthActions);
+        this.bindActions(UserActions);
+    }
 
-const CurrentUserStore = mcfly.createStore({
-    getLoggingIn(){return loggingIn},
-    getCurrentUser(){return JSON.parse(localStorage.currentUser)},
     isFollowing(otherId){
-        var user = CurrentUserStore.getCurrentUser();
         for(var i=0; i<user.following.length; i++){
-            if(user.following[i].id == otherId){
+            if(this.currentUser.following[i].id == otherId){
                 return true;
             }
         }
         return false;
     }
-}, function(data){
-    switch(data.actionType){
-        case constants.actionTypes.LOGGING_IN:
-            loggingIn = true;
-            break;
-        case constants.actionTypes.LOGGED_IN:
-            loggingIn = false;
-            localStorage.currentUser = JSON.stringify(data.user);
-            break;
-        case constants.actionTypes.LOGGED_OUT:
-            loggingIn = false;
-            localStorage.currentUser = null;
-            break;
-        case constants.actionTypes.LOGIN_CANCELLED:
-            loggingIn = false;
-            break;
-        case constants.actionTypes.FOLLOWED:
-            var currentUser = CurrentUserStore.getCurrentUser();
-            var idObjects = [];
-            for(var i=0; i<data.userIds.length; i++){
-                idObjects.push({id: data.userIds[i]})
-            }
-            Array.prototype.push.apply(currentUser.following, idObjects);
-            localStorage.currentUser = JSON.stringify(currentUser);
-            break;
-        case constants.actionTypes.UNFOLLOWED:
-            var currentUser = CurrentUserStore.getCurrentUser();
-            for(var i=0; i<data.userIds.length; i++){
-                for(var j=0; j<currentUser.following.length; j++){
-                    if(currentUser.following[j].id == data.userIds[i]){
-                        currentUser.following.splice(j, 1)
-                    }
+
+    onLoggingIn(){
+        this.loggingIn = true
+    }
+
+    onLoggedIn(user){
+        this.loggingIn = false;
+        this.currentUser = user;
+        localStorage.currentUser = JSON.stringify(user);
+    }
+
+    onLoggedOut(){
+        this.currentUser = null;
+        localStorage.currentUser = null;
+        this.loggingIn = false;
+    }
+
+    onLoginCancelled(){
+        this.loggingIn = false;
+    }
+
+    onFollow(userIds){
+        var idObjects = [];
+        for(var i=0; i<userIds.length){
+            idObjects.push({id: userIds[i]});
+        }
+        this.currentUser.following.push(...idObjects);
+        localStorage.currentUser = JSON.stringify(this.currentUser);
+    }
+
+    onUnfollow(userIds){
+        for(var i=0; i< userIds.length; i++){
+            for(var j=0; j<this.currentUser.following.length; j++){
+                if(this.currentUser.following[j].id == userIds[i]){
+                    this.currentUser.following.splice(j, 1)
                 }
             }
-            localStorage.currentUser = JSON.stringify(currentUser);
-            break;
-        default:
-            return
+        }
+        localStorage.currentUser = JSON.stringify(this.currentUser);
     }
-    CurrentUserStore.emitChange();
-});
+}, "CurrentUserStore");
 
 module.exports = CurrentUserStore;

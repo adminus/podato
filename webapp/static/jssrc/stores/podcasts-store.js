@@ -1,19 +1,21 @@
-const mcfly = require("../mcfly");
-const constants = require("../constants");
+const flux = require("../flux");
+const PodcastActions = require("../actions/podcast-actions");
 
 var podcasts = {}
 
-const PodcastsStore = mcfly.createStore({
-    getPodcast(id){return podcasts[id]}
-}, function(data){
-    switch(data.actionType){
-        case constants.actionTypes.PODCAST_FETCHED:
-            podcasts[data.podcast.id] = data.podcast;
-            break;
-        default:
-            return
+const PodcastsStore = flux.createStore(class PodcastsStore {
+    constructor(){
+        this.podcasts = {}
+        this.bindActions(PodcastActions);
     }
-    PodcastsStore.emitChange();
+
+    getPodcast(id){
+        return this.podcasts[id]
+    }
+
+    onFetchPodcast(podcast){
+        this.podcasts[podcast.id] = podcast;
+    }
 });
 
 module.exports = PodcastsStore;

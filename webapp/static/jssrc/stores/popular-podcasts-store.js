@@ -1,19 +1,20 @@
-const mcfly = require("../mcfly");
-const constants = require("../constants");
-
+const flux = require("../flux");
+const PodcastActions = require("../actions/podcast-actions");
 var popular_podcasts = [];
 
-const PopularPodcastsStore = mcfly.createStore({
-    get(){return popular_podcasts}
-}, function(data){
-    switch(data.actionType){
-        case constants.actionTypes.POPULAR_PODCASTS_FETCHED:
-            popular_podcasts = data.podcasts;
-            break;
-        default:
-            return
+const PopularPodcastsStore = flux.createStore(class PopularPodcastsStore {
+    constructor(){
+        this.popularPodcasts = [];
+        this.bindActions(PodcastActions);
     }
-    PopularPodcastsStore.emitChange();
+
+    get(){
+        return this.popularPodcasts
+    }
+
+    onFetchPopularPodcasts(podcasts){
+        this.popularPodcasts = podcasts;
+    }
 });
 
 module.exports = PopularPodcastsStore;

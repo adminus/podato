@@ -1,19 +1,23 @@
-const mcfly = require("../mcfly");
-const constants = require("../constants");
+const flux = require("../flux");
+const UserActions = require("../actions/user-actions");
+const AuthActions = require("../actions/auth-actions");
 
 var users = {}
 
-const UsersStore = mcfly.createStore({
-    getUser(id){return users[id]}
-}, function(data){
-    switch(data.actionType){
-        case constants.actionTypes.USER_FETCHED:
-            users[data.user.id] = data.user;
-            break;
-        default:
-            return
+const UsersStore = flux.createStore(class UsersStore{
+    constructor(){
+        this.users = {};
+        this.bindActions(UserActions);
+        this.bindActions(AuthActions);
     }
-    UsersStore.emitChange();
+
+    getUser(id){
+        return users[id]
+    }
+
+    onFetchUser(user){
+        users[user.id] = user
+    }
 });
 
 module.exports = UsersStore;
