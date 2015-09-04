@@ -11,8 +11,6 @@ const PopularPodcastsStore = require("../../stores/popular-podcasts-store");
 const SubscriptionsStore = require("../../stores/subscriptions-store");
 const PodcastActions = require("../../actions/podcast-actions");
 
-window.SubscriptionsStore = SubscriptionsStore;
-window.PopularPodcastsStore = PopularPodcastsStore;
 
 const Home = React.createClass({
     mixins: [ListenerMixin],
@@ -67,7 +65,7 @@ const Home = React.createClass({
         PodcastActions.fetchPopularPodcasts();
         this.listenTo(CurrentUserStore, this.storeDidChange);
         this.listenTo(PopularPodcastsStore, this.storeDidChange);
-        this.listenTo(SubscriptionsStore);
+        this.listenTo(SubscriptionsStore, this.storeDidChange);
     },
     componentWillReceiveProps() {
         if(CurrentUserStore.getCurrentUser != null){
@@ -80,7 +78,7 @@ const Home = React.createClass({
     storeDidChange(){
         var authState = null;
         if(CurrentUserStore.getState().currentUser == null){
-            if (CurrentUserStore/fonts.getLoggingIn()) {
+            if (CurrentUserStore.getLoggingIn()) {
                 authState = "progress";
             }
         }else{
@@ -91,8 +89,8 @@ const Home = React.createClass({
         }
         this.setState({
             authState: authState,
-            popularPodcasts: PopularPodcastsStore/fonts.get(),
-            userSubscriptions: SubscriptionsStore/fonts.getSubscriptions("me") || [   ]
+            popularPodcasts: PopularPodcastsStore.get(),
+            userSubscriptions: SubscriptionsStore.getSubscriptions("me") || [   ]
         });
     }
 });

@@ -43,13 +43,15 @@ const PodcastActions = flux.createActions(class PodcastActions {
                     console.log("subscription result:");
                     console.log(resp.obj);
                     if(resp.obj.success==true){
-                        this.actions.reportProgress(rep.obj.progress, resp.obj.total)
+                        setTimeout(() => this.actions.reportProgress(rep.obj.progress, resp.obj.total))
                         resolve()
                     }else if(resp.obj.success==false){
                         reject(resp);
                     }else{
-                        this.actions.reportProgress(resp.obj.progress, resp.obj.total);
-                        this.actions.checkSubscriptionResult(id).then(resolve, reject);
+                        setTimeout(() => {
+                            this.actions.reportProgress(resp.obj.progress, resp.obj.total);
+                            this.actions.checkSubscriptionResult(id).then(resolve, reject);
+                        })
                     }
                 })
             });
