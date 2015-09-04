@@ -68,6 +68,6 @@ const SubscriptionsStore = flux.createStore(class SubscriptionsStore{
             this.progress = null;
         }
     }
-});
+}, "SubscriptionsStore");
 
 module.exports = SubscriptionsStore;

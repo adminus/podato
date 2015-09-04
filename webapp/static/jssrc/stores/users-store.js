@@ -18,6 +18,6 @@ const UsersStore = flux.createStore(class UsersStore{
     onFetchUser(user){
         users[user.id] = user
     }
-});
+}, "UsersStore");
 
 module.exports = UsersStore;

@@ -15,6 +15,6 @@ const PopularPodcastsStore = flux.createStore(class PopularPodcastsStore {
     onFetchPopularPodcasts(podcasts){
         this.popularPodcasts = podcasts;
     }
-});
+}, "PopularPodcastsStore");
 
 module.exports = PopularPodcastsStore;
