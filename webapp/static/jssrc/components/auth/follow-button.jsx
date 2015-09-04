@@ -29,7 +29,7 @@ const FollowButton = React.createClass({
     makeState(){
         var state = {
             user: CurrentUserStore.getStatee().currentUser,
-            isFollowing: CurrentUserStore.getInstance().isFollowing(this.props.user.id)
+            isFollowing: CurrentUserStore/fonts.isFollowing(this.props.user.id)
         }
         return state
     },

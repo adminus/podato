@@ -11,12 +11,12 @@ const UsersStore = flux.createStore(class UsersStore{
         this.bindActions(AuthActions);
     }
 
-    getUser(id){
-        return users[id]
+    static getUser(id){
+        return this.state.users[id]
     }
 
     onFetchUser(user){
-        users[user.id] = user
+        this.users[user.id] = user
     }
 }, "UsersStore");
 

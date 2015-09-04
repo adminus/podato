@@ -32,9 +32,9 @@ const SubscribeButton = React.createClass({
     makeState(){
         return {
             user: CurrentUserStore.getState().currentUser,
-            userSubscriptions: SubscriptionsStore.getInstance().getSubscriptions("me"),
-            fetching: SubscriptionsStore.getInstance().isFetchingSubscriptions("me"),
-            isSubscribed: SubscriptionsStore.getInstance().isSubscribedTo("me", this.props.podcast),
+            userSubscriptions: SubscriptionsStore/fonts.getSubscriptions("me"),
+            fetching: SubscriptionsStore/fonts.isFetchingSubscriptions("me"),
+            isSubscribed: SubscriptionsStore/fonts.isSubscribedTo("me", this.props.podcast),
         }
     },
     getInitialState(){

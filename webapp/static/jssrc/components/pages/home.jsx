@@ -11,6 +11,9 @@ const PopularPodcastsStore = require("../../stores/popular-podcasts-store");
 const SubscriptionsStore = require("../../stores/subscriptions-store");
 const PodcastActions = require("../../actions/podcast-actions");
 
+window.SubscriptionsStore = SubscriptionsStore;
+window.PopularPodcastsStore = PopularPodcastsStore;
+
 const Home = React.createClass({
     mixins: [ListenerMixin],
     render(){
@@ -77,7 +80,7 @@ const Home = React.createClass({
     storeDidChange(){
         var authState = null;
         if(CurrentUserStore.getState().currentUser == null){
-            if (CurrentUserStore.getInstance().getLoggingIn()) {
+            if (CurrentUserStore/fonts.getLoggingIn()) {
                 authState = "progress";
             }
         }else{
@@ -88,8 +91,8 @@ const Home = React.createClass({
         }
         this.setState({
             authState: authState,
-            popularPodcasts: PopularPodcastsStore.getInstance().get(),
-            userSubscriptions: SubscriptionsStore.getInstance().getSubscriptions("me") || [   ]
+            popularPodcasts: PopularPodcastsStore/fonts.get(),
+            userSubscriptions: SubscriptionsStore/fonts.getSubscriptions("me") || [   ]
         });
     }
 });

@@ -100,7 +100,7 @@ const PodcastActions = flux.createActions(class PodcastActions {
 
     fetchSubscriptions(userId){
         userId = userId || "me"
-        this.actions.fetchingSubscriptions(userId);
+        setTimeout(() => this.actions.fetchingSubscriptions(userId));
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
                 api.users.getSubscriptions({userId: userId}, (resp) => {

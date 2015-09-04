@@ -16,8 +16,8 @@ const SubscriptionsStore = flux.createStore(class SubscriptionsStore{
         this.bindActions(PodcastActions);
     }
 
-    getSubscriptions(userId){
-        return this.subscriptions[userId]
+    static getSubscriptions(userId){
+        return this.state.subscriptions[userId]
     }
 
     isFetchingSubscriptions(userId){

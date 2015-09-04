@@ -10,9 +10,9 @@ const CurrentUserStore = flux.createStore(class {
         this.bindActions(UserActions);
     }
 
-    isFollowing(otherId){
-        for(var i=0; i<user.following.length; i++){
-            if(this.currentUser.following[i].id == otherId){
+    static isFollowing(otherId){
+        for(var i=0; i<this.stateuser.following.length; i++){
+            if(this.state.currentUser.following[i].id == otherId){
                 return true;
             }
         }

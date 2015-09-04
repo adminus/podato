@@ -9,8 +9,8 @@ const PodcastsStore = flux.createStore(class PodcastsStore {
         this.bindActions(PodcastActions);
     }
 
-    getPodcast(id){
-        return this.podcasts[id]
+    static getPodcast(id){
+        return this.state.podcasts[id]
     }
 
     onFetchPodcast(podcast){

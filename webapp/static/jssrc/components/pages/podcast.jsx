@@ -71,7 +71,7 @@ const Podcast = React.createClass({
     },
     setPodcast(){
         var podcastId = this.context.router.getCurrentParams().splat;
-        var podcast = PodcastsStore.getInstance().getPodcast(decodeURIComponent(podcastId));
+        var podcast = PodcastsStore/fonts.getPodcast(decodeURIComponent(podcastId));
 
         if (!podcast){
             PodcastsActions.fetchPodcast(podcastId);

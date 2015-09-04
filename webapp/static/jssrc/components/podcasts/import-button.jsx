@@ -49,7 +49,7 @@ const ImportButton = React.createClass({
     },
     storeDidChange(){
         this.setState({
-            progress: SubscriptionsStore.getInstance().getProgress()
+            progress: SubscriptionsStore/fonts.getProgress()
         })
     },
     toggleModal(){
