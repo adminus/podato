@@ -20,20 +20,20 @@ const SubscriptionsStore = flux.createStore(class SubscriptionsStore{
         return this.state.subscriptions[userId]
     }
 
-    isFetchingSubscriptions(userId){
-        return (this.fetching.indexOf(userId) >= 0)
+    static isFetchingSubscriptions(userId){
+        return (this.state.fetching.indexOf(userId) >= 0)
     }
 
-    getProgress(){
-        return this.progress;
+    static getProgress(){
+        return this.state.progress;
     }
 
-    isSubscribedTo(userId, podcast){
-        var in_subscriptions = (this.subscriptions[userId] && this.subscriptions[userId].filter((p) => {
+    static isSubscribedTo(userId, podcast){
+        var in_subscriptions = (this.state.subscriptions[userId] && this.state.subscriptions[userId].filter((p) => {
             return p.id == podcast;
         }).length > 0);
 
-        var in_subscribed_urls = (userId === "me" && this.subscribedUrls.indexOf(podcast) >= 0);
+        var in_subscribed_urls = (userId === "me" && this.state.subscribedUrls.indexOf(podcast) >= 0);
 
         return (in_subscriptions || in_subscribed_urls);
     }
@@ -55,10 +55,10 @@ const SubscriptionsStore = flux.createStore(class SubscriptionsStore{
 
     onUnsubscribe(podcastIds){
         this.subscriptions.me = this.subscriptions.me.filter((item) => {
-            return data.podcasts.indexOf(item.id) < 0;
+            return podcastIds.indexOf(item.id) < 0;
         });
         this.subscribedUrls = this.subscribedUrls.filter((item) => {
-            return data.podcasts.indexOf(item) < 0;
+            return podcastIds.indexOf(item) < 0;
         });
     }
 

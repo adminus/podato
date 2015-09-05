@@ -1,5 +1,5 @@
 const React = require("react");
-const ListenerMixin = ("alt/mixins/ListenerMixin");
+const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const UserActions = require("../../actions/user-actions.js");
 
@@ -9,6 +9,8 @@ const Spinner = require("../common/spinner.jsx");
 const FollowButton = React.createClass({
     mixins: [ListenerMixin],
     componentWillMount(){
+        window.WrongComponent = this;
+        window.ListenerMixin = ListenerMixin;
         this.listenTo(CurrentUserStore, this.storeDidChange);
     },
     render(){
@@ -28,8 +30,8 @@ const FollowButton = React.createClass({
     },
     makeState(){
         var state = {
-            user: CurrentUserStore.getStatee().currentUser,
-            isFollowing: CurrentUserStore/fonts.isFollowing(this.props.user.id)
+            user: CurrentUserStore.getState().currentUser,
+            isFollowing: CurrentUserStore.isFollowing(this.props.user.id)
         }
         return state
     },

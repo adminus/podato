@@ -21,7 +21,7 @@ const SubscriptionsGrid = React.createClass({
         return this.makeState();
     },
     componentWillMount(){
-        this.listenTo(SubscriptionsGrid, this.storeDidChange);
+        this.listenTo(SubscriptionsStore, this.storeDidChange);
     },
     storeDidChange(){
         this.setState(this.makeState());

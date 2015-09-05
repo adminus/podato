@@ -18,18 +18,13 @@ const AuthActions = flux.createActions(class AuthActions {
                 api.logout();
             }
         })
-        return {
-            actionType: constants.actionTypes.LOGGING_OUT
-        }
+        return {}
     }
 
     fetchUser(userId){
         api.loaded.then(() => {
             api.users.getUser({userId: userId}, (resp) => {
-                this.dispatch({
-                    actionType: constants.actionTypes.USER_FETCHED,
-                    user: resp.obj
-                });
+                this.dispatch(resp.obj);
             });
         });
     }

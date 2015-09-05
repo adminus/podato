@@ -60,7 +60,7 @@ const User = React.createClass({
             const me = CurrentUserStore.getState().currentUser.id;
             this.transitionTo("user", {userId: me});
         }
-        var user = UsersStore/fonts.getUser(userId);
+        var user = UsersStore.getUser(userId);
 
         if (!user){
             AuthActions.fetchUser(userId);
