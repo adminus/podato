@@ -1,6 +1,5 @@
 const flux = require("../flux");
 const api = require("../api");
-const constants = require("../constants");
 
 
 const UserActions = flux.createActions(class UserActions {

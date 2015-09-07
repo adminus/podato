@@ -1,18 +1,17 @@
 const React = require("react");
 const Image = require("../common/image.jsx");
 
+const PlaybackActions = require("../../actions/playback-actions");
+
 var Episode = React.createClass({
-    componentWillReceiveProps(p){
-        console.log("props:");
-        console.log(p);
-    },
     render(){
         console.log("render called...");
         var published = new Date(this.props.episode.published);
         return (
             <div className="clearfix mxn1 py2 border-bottom border-silver">
                 <div className="col col-2 px1">
-                <Image src={this.props.episode.image || this.props.podcast.image} className="full-width" />
+                    <Image src={this.props.episode.image || this.props.podcast.image} className="full-width" />
+                    <a onClick={this.play}><i className="el el-play-circle" AriaLabel="play"></i> play</a>
                 </div>
                 <div className="col col-10 px1 lh1">
                     <span className="h5 bold">{this.props.episode.title}</span>
@@ -23,6 +22,9 @@ var Episode = React.createClass({
                 </div>
             </div>
         )
+    },
+    play(){
+        PlaybackActions.playEpisode(this.props.episode);
     }
 });
 
