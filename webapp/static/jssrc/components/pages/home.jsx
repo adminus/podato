@@ -38,9 +38,9 @@ const Home = React.createClass({
     },
     getAuthButtons(){
         var auth = [
-            (<LoginButton authProvider="Facebook" className="m1" key="a1" />),
-            (<LoginButton authProvider="Twitter" className="m1" key="a2" />),
-            (<LoginButton authProvider="Google" className="m1" key="a3" />)
+            (<LoginButton authProvider="Facebook" className="m1" key="auth-1" />),
+            (<LoginButton authProvider="Twitter" className="m1" key="auth-2" />),
+            (<LoginButton authProvider="Google" className="m1" key="auth-3" />)
         ];
 
         if(this.state.authState === "progress") {
