@@ -9,7 +9,7 @@ const PopularPodcastsStore = flux.createStore(class PopularPodcastsStore {
     }
 
     static get(){
-        return this.getState().popularPodcasts
+        return this.state.popularPodcasts;
     }
 
     onFetchPopularPodcasts(podcasts){

@@ -24,6 +24,10 @@ const CurrentUserStore = flux.createStore(class {
         return this.state.currentUser != null;
     }
 
+    static getLoggingIn(){
+        return this.state.loggingIn;
+    }
+
     onLoggingIn(){
         this.loggingIn = true
     }
