@@ -14,6 +14,14 @@ const PlaybackStore = flux.createStore(class UsersStore{
         this.currentEpisode = episode;
         this.playing = true;
     }
-}, "UsersStore");
+
+    onPause(){
+        this.playing = false;
+    }
+
+    onResume(){
+        this.playing = true;
+    }
+}, "PlaybackStore");
 
 module.exports = PlaybackStore;

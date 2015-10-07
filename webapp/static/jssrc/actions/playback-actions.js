@@ -9,9 +9,15 @@ const PlaybackActions = flux.createActions(class UserActions {
         PlaybackManager.play();
         this.dispatch(episode);
     }
+
     pause(){
         PlaybackManager.pause();
-        this.dispatch();
+        this.dispatch(true);
+    }
+
+    resume(){
+        PlaybackManager.play();
+        this.dispatch(true);
     }
 });
 
