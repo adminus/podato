@@ -48,3 +48,10 @@ def get_multi(keys, key_prefix=""):
 
     values = redis.mget(keys)
     return {original_keys[i]: values[i] for i in xrange(len(keys))}
+
+
+def flush():
+    redis.flushdb()
+
+def list_keys(pattern):
+    return redis.keys(pattern)

@@ -31,6 +31,7 @@ class PodcastResource(Resource):
         podcast = Podcast.get_by_url(podcastId, fetch=fetch)
         if podcast == None:
             abort(404, message="Podcast not found: %s" % podcastId)
+        podcast.ensure_episode_images()
         return podcast
 
 queryParser = api.parser()

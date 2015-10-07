@@ -1,5 +1,6 @@
 import logging
 
+from webapp import cache
 from webapp.db import Model, r
 from webapp.podcasts import error_store
 from crawl_errors import CrawlError
@@ -109,7 +110,10 @@ class Podcast(Model):
 
     @classmethod
     def query(cls, order=None, category=None, author=None, language=None, page=1, per_page=30):
-
+        if page < 3:
+            cached = cls._query_cached(order=order, category=category, author=author, language=language, page=page, per_page=per_page)
+            if cached:
+                return cached
         query = cls.get_table()
         if order:
             query = query.order_by(order)
@@ -119,10 +123,34 @@ class Podcast(Model):
             query = query.filter({"author": author})
         if language:
             query = query.filter({"language":language})
-        query.skip((page-1)*per_page)
-        query.limit(per_page)
 
-        return [cls.from_dict(p) for p in cls.run(query)]
+        if page < 1:
+            page = 1
+        per_page = max(1, min(per_page, 30))
+        query = query.skip((page-1)*per_page)
+        query = query.limit(per_page)
+
+        results = [cls.from_dict(p) for p in cls.run(query)]
+        cls._cache_query(results, order, category, author, language, page, per_page)
+
+    @classmethod
+    def _query_cached(cls, order=None, category=None, author=None, language=None, page=1, per_page=30):
+        key = cls._make_query_key(order, category, author, language, page, per_page)
+        return cache.get(key)
+
+    @classmethod
+    def _cache_query(cls, results, *args):
+        key = cls._make_query_key(*args)
+        return cache.set(key, results)
+
+    @classmethod
+    def _make_query_key(self, *args):
+        return "|".join([str(a) for a in args])
+
+    def ensure_episode_images(self):
+        for episode in self.episodes:
+            if not episode.image:
+                episode.image = self.image
 
 
 Person.register()
