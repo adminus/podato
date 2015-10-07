@@ -132,6 +132,7 @@ class Podcast(Model):
 
         results = [cls.from_dict(p) for p in cls.run(query)]
         cls._cache_query(results, order, category, author, language, page, per_page)
+        return results
 
     @classmethod
     def _query_cached(cls, order=None, category=None, author=None, language=None, page=1, per_page=30):
