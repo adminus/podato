@@ -5,7 +5,8 @@ const UserActions = require("../actions/user-actions");
 const CurrentUserStore = flux.createStore(class {
     constructor(){
         this.loggingIn = false;
-        this.currentUser = JSON.parse(localStorage.currentUser);
+        //JSON.parse doesn't deal well with undefined, so we pass in null instead
+        this.currentUser = JSON.parse(localStorage.currentUser || null);
         this.bindActions(AuthActions);
         this.bindActions(UserActions);
     }
@@ -17,6 +18,10 @@ const CurrentUserStore = flux.createStore(class {
             }
         }
         return false;
+    }
+
+    static getLoggedIn(){
+        return this.state.currentUser != null;
     }
 
     onLoggingIn(){
