@@ -109,14 +109,19 @@ class Podcast(Model):
         return d
 
     @classmethod
-    def query(cls, order=None, category=None, author=None, language=None, page=1, per_page=30):
+    def query(cls, order=None, category=None, author=None, language=None, page=1, per_page=30, fields=None  ):
         if page < 3:
             cached = cls._query_cached(order=order, category=category, author=author, language=language, page=page, per_page=per_page)
             if cached:
                 return cached
+
         query = cls.get_table()
         if order:
-            query = query.order_by(order)
+            indexed = ["subscribers", "author"]
+            if order in indexed:
+                query = query.order_by(index=order)
+            else:
+                query = query.order_by(order)
         if category:
             query = query.filter(lambda p:p["categories"].contains(category))
         if author:
@@ -129,6 +134,8 @@ class Podcast(Model):
         per_page = max(1, min(per_page, 30))
         query = query.skip((page-1)*per_page)
         query = query.limit(per_page)
+        fields = fields or ["url", "title", "author", "image", "description", "categories"]
+        query = query.pluck("__type", *fields)
 
         results = [cls.from_dict(p) for p in cls.run(query)]
         cls._cache_query(results, order, category, author, language, page, per_page)
