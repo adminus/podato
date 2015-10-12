@@ -19,6 +19,12 @@ const PlaybackActions = flux.createActions(class UserActions {
         PlaybackManager.play();
         this.dispatch(true);
     }
+
+    timeUpdate(pb){
+        this.dispatch(pb);
+    }
 });
+
+PlaybackManager.on("time", PlaybackActions.timeUpdate.bind(PlaybackActions));
 
 module.exports = PlaybackActions;

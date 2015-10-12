@@ -5,6 +5,8 @@ const PlaybackStore = flux.createStore(class UsersStore{
     constructor(){
         this.currentEpisode = null;
         this.playing = false;
+        this.duration = 0;
+        this.currentTime = 0;
         this.bindActions(PlaybackActions);
     }
 
@@ -19,6 +21,11 @@ const PlaybackStore = flux.createStore(class UsersStore{
 
     onResume(){
         this.playing = true;
+    }
+
+    onTimeUpdate(playback){
+        this.currentTime = playback.getCurrentTime();
+        this.duration = playback.getDuration();
     }
 }, "PlaybackStore");
 

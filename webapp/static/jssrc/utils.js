@@ -40,6 +40,24 @@ var utils = {
         console.log("sorted:");
         console.log(sorted);
         return sorted;
+    },
+
+    formatTime(d){
+        const seconds = d % 60;
+        d = d - seconds;
+        const minutes = (d % 3600)/60
+        d = d - minutes*60;
+        const hours = d / 3600;
+        var s = this.padNumber(minutes, 2) + ":" + this.padNumber(seconds, 2)
+        if(hours > 0){
+            s = this.padNumber(hours, 2) + ":" + s;
+        }
+        return s;
+    },
+
+    padNumber(n, l){
+        n = Math.floor(n) + '';
+        return n.length >= l ? n : new Array(l - n.length + 1).join("0") + n;
     }
 };
 

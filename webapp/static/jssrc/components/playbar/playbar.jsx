@@ -1,11 +1,13 @@
 const React = require("react");
 const Link = require("react-router").Link;
 const ListenerMixin = require("alt/mixins/ListenerMixin");
-
+const utils = require("../../utils");
 const Image = require("../common/image.jsx");
 
 const PlaybackStore = require("../../stores/playback-store");
 const PlaybackActions = require("../../actions/playback-actions");
+
+const ProgressBar = require("./progress-bar.jsx");
 
 const PlayBar = React.createClass({
     mixins: [ListenerMixin],
@@ -19,29 +21,34 @@ const PlayBar = React.createClass({
         }
         return (
             <nav className="fixed bottom-0 left-0 right-0 bg-red white px4" style={{height:"2.5rem"}}>
+                <ProgressBar progress={this.state.progress} />
                 <div className="container flex flex-stretch">
                     <Image src={this.state.episode.image} style={{height: "2.5rem"}} />
                     <button className="button button-red"><i className="el el-backward" /></button>
                     {playButton}
                     <button className="button button-red"><i className="el el-forward" /></button>
+                    <div style={{height:"2.5rem", "lineHeight":"2.5rem"}}>{utils.formatTime(this.state.currentTime)} / {utils.formatTime(this.state.duration)}</div>
                 </div>
             </nav>
         )
     },
     getInitialState(){
-        return {
-            playing: PlaybackStore.getState().playing,
-            episode: PlaybackStore.getState().currentEpisode
-        }
+        return this.makeState()
     },
     componentWillMount(){
         this.listenTo(PlaybackStore, this.storeDidChange);
     },
     storeDidChange(){
-        this.setState({
+        this.setState(this.makeState());
+    },
+    makeState(){
+        return {
             playing: PlaybackStore.getState().playing,
-            episode: PlaybackStore.getState().currentEpisode
-        });
+            episode: PlaybackStore.getState().currentEpisode,
+            duration: PlaybackStore.getState().duration,
+            currentTime: PlaybackStore.getState().currentTime,
+            progress: PlaybackStore.getState().currentTime / PlaybackStore.getState().duration
+        }
     },
     play(){
         PlaybackActions.resume();

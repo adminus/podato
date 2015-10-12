@@ -6,16 +6,19 @@ const PlaybackManager = new EventEmitter()
 merge(PlaybackManager, {
     episode: null,
     audio: new Audio(),
+    init(){
+        this.audio.ontimeupdate = this.emit.bind(this, "time", this);
+        this.audio.onprogress = this.emit.bind(this, "load", this);
+        this.audio.onended = this.emit.bind(this, "ended", this);
+    },
     setEpisode(ep){
         this.episode = ep;
         this.audio.src = ep.enclosure.url;
     },
     play(){
         this.audio.play();
-        this._startTimeUpdates();
     },
     pause(){
-        this._stopTimeUpdates();
         this.audio.pause()
     },
     seek(secs){
@@ -25,22 +28,10 @@ merge(PlaybackManager, {
         return this.audio.currentTime;
     },
     getDuration(){
-        return this.audio.duration();
-    },
-    _startTimeUpdates(){
-        this._timeUpdateId = setInterval(() => {
-            this.emit("update", this._makeEventObj());
-        }, 500);
-    },
-    _stopTimeUpdates(){
-        clearInterval(this._timeUpdateId);
-    },
-    _makeEventObj(){
-        return {
-            duration: this.audio.duration,
-            time: this.audio.currentTime
-        }
+        return this.audio.duration;
     }
 });
+
+PlaybackManager.init();
 
 module.exports = PlaybackManager;
