@@ -169,7 +169,8 @@ def _make_episode(entry):
     try:
         episode = Episode(
             title=_get_or_errors(entry, "title", errors, crawl_errors.NO_TITLE, episode=entry.get("id")),
-            subtitle=_get_or_errors(entry, "subtitle", errors, crawl_errors.NO_SUBTITLE, episode=entry.get("id")),
+            subtitle=_get_or_errors(entry, "subtitle", errors, crawl_errors.NO_SUBTITLE, episode=entry.get("id"))
+                     or entry.get("summary"),
             description=_get_episode_description(entry),
             author=_get_or_errors(entry, "author", errors, crawl_errors.NO_AUTHOR, episode=entry.get("id")),
             guid=entry.guid,
