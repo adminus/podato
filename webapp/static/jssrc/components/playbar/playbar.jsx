@@ -21,7 +21,7 @@ const PlayBar = React.createClass({
         }
         return (
             <nav className="fixed bottom-0 left-0 right-0 bg-red white px4" style={{height:"2.5rem"}}>
-                <ProgressBar progress={this.state.progress} />
+                <ProgressBar progress={this.state.progress} duration={this.state.duration}/>
                 <div className="container flex flex-stretch">
                     <Image src={this.state.episode.image} style={{height: "2.5rem"}} />
                     <button className="button button-red"><i className="el el-backward" /></button>

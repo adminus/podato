@@ -20,6 +20,10 @@ const PlaybackActions = flux.createActions(class UserActions {
         this.dispatch(true);
     }
 
+    seek(secs){
+        PlaybackManager.seek(secs);
+    }
+
     timeUpdate(pb){
         this.dispatch(pb);
     }
