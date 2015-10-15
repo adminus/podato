@@ -48,9 +48,26 @@ class Podcast(Model):
         )
 
     @classmethod
-    def get_by_url(cls, url, fetch=False):
-        """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned.
-        If fetch is set to True, we will attempt to fetch the podcast if we don't find it."""
+    def get_or_fetch(cls, url):
+        """Get a podcast by its feed url. If it's not in the db, fetch it."""
+        p = cls.get_by_url(url)
+        if not p:
+            logging.debug("Not in the database, need to fetch.")
+            code = error_store.get_error(url)
+            if code:
+                logging.debug("Refusing to fetch, because we've encountered an error recently: %s" % code)
+                return None
+
+            # Doing this import inside a function to avoid circular import.
+            from webapp.podcasts import crawler
+            results = list(crawler.fetch(url).results[0].collect())
+            logging.debug("Fetched, got %s." % results)
+            p = cls.get_by_url(url)
+        return p
+
+    @classmethod
+    def get_by_url(cls, url):
+        """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
         logging.debug("Retrieving podcast: %s" % url)
         p = cls.get(url)
         if p:
@@ -64,20 +81,9 @@ class Podcast(Model):
         if res:
             logging.debug("found it.")
             return cls.from_dict(res[0])
-
-        elif fetch:
-            logging.debug("Not in the database, need to fetch.")
-            code = error_store.get_error(url)
-            if code:
-                logging.debug("Refusing to fetch, because we've encountered an error recently: %s" % code)
-                return None
-
-            # Doing this import inside a function to avoid circular import.
-            from webapp.podcasts import crawler
-            results = list(crawler.fetch(url).results[0].collect())
-            logging.debug("Fetched, got %s." % results)
-            return cls.get_by_url(url)
         return None
+
+
 
     @classmethod
     def delete_by_url(cls, url):

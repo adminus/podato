@@ -28,7 +28,11 @@ class PodcastResource(Resource):
         """Get a podcast by id."""
         fetch = parser.parse_args().get("fetch")
         podcastId = urllib.unquote(podcastId)
-        podcast = Podcast.get_by_url(podcastId, fetch=fetch)
+        if fetch:
+            podcast = Podcast.get_or_fetch(podcastId)
+        else:
+            podcast = Podcast.get_by_url(podcastId)
+
         if podcast == None:
             abort(404, message="Podcast not found: %s" % podcastId)
         podcast.ensure_episode_images()
