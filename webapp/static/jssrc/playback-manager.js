@@ -1,5 +1,5 @@
 var merge = require("merge");
-var EventEmitter = require("events").EventEmitter;
+var EventEmitter = require("eventemitter3");
 
 const PlaybackManager = new EventEmitter()
 

@@ -2,7 +2,7 @@ var swagger = require("swagger-client");
 var config = require("config");
 var utils = require("./utils");
 var merge = require("merge");
-var EventEmitter = require("events").EventEmitter;
+var EventEmitter = require("eventemitter3");
 
 var API = new EventEmitter();
 

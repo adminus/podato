@@ -18,22 +18,24 @@ const ProgressBar = React.createClass({
             transition: "height 0.3s, top 0.3s"
         };
         const barStyles = {
-            width: (this.props.progress * 100) + "%",
+            width: "1%",
+            transformOrigin: "left top",
+            transform: "scale("+(this.props.progress * 100)+", 1)",
             height: "100%",
             background: "rgba(0, 0, 0, 0.7)",
             content: "\t"
         };
-        const pointerStyles = {
+        var pointerStyles = {
             background: "black",
             position:"absolute",
-            left: this.state.pointerX,
+            left: 0,
             top: "-32",
-            transform: "translate(-50%, 0)",
+            transform: "translate("+this.state.pointerX+"px, 0) translate(-50%, 0)",
             display: this.state.pointerX ? "block": "none"
         }
         const pointerTriangle = {
             width: "0",
-            eight: "0",
+            height: "0",
             borderStyle: "solid",
             borderWidth: "16px 8px 0 9px",
             borderColor: "#000 transparent transparent transparent",
