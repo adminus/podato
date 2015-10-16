@@ -25,7 +25,7 @@
     "alt": "^0.17.1",
     "ax": "^0.2.2",
     "babelify": "^6.1.2",
-    "browserify": "^9.0.3",
+    "browserify": "^9.0.8",
     "cookiejar": "^2.0.1",
     "doc-ready": "^1.0.3",
     "eventemitter3": "^1.1.1",
