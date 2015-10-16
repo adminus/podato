@@ -2,8 +2,11 @@ const React = require("react");
 const Link = require("react-router").Link;
 const ListenerMixin = require("alt/mixins/ListenerMixin");
 
+const SearchBox = require("./search-box.jsx");
+
 const CurrentUserStore = require("../../stores/current-user-store");
 const AuthActions = require("../../actions/auth-actions");
+
 
 const Navbar = React.createClass({
     mixins: [ListenerMixin],
@@ -20,7 +23,7 @@ const Navbar = React.createClass({
                 <div className="container flex flex-stretch" style={{height:"100%"}}>
                     <Link to="home" style={{height:"100%"}}><img src="/img/logo.png" style={{height:"100%"}}/></Link>
                     <Link to="home" className="button button-red">Home</Link>
-                    <div style={{padding:"0.5rem"}}><input type="search" name="search" style={{height:"1.5rem"}} /></div>
+                    <SearchBox />
                     {logout}
                 </div>
             </nav>

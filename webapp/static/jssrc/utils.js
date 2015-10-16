@@ -58,6 +58,18 @@ var utils = {
     padNumber(n, l){
         n = Math.floor(n) + '';
         return n.length >= l ? n : new Array(l - n.length + 1).join("0") + n;
+    },
+
+    fetchJSONP(baseurl, params){
+        const script = document.createElement("script");
+        const callback = "_cb_" + new Date().getTime();
+        params.callback = callback;
+        return new Promise((resolve, reject) => {
+            window[callback] = resolve;
+            script.onError = reject;
+            script.src = baseurl + this.encodeQueryString(params);
+            document.head.appendChild(script);
+        });
     }
 };
 
