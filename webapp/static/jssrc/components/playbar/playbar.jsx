@@ -15,19 +15,21 @@ const PlayBar = React.createClass({
         if(!this.state.episode){
             return null;
         }
-        var playButton = <button className="button button-red" onClick={this.play}><i className="el el-play" /></button>
+        var playButton = <button className="button button-red col col-1" onClick={this.play} style={{height:"2.5rem"}}><i className="el el-play" /></button>
         if(this.state.playing){
-            playButton = <button className="button button-red" onClick={this.pause}><i className="el el-pause"/></button>
+            playButton = <button className="button button-red col col-1" onClick={this.pause} style={{height:"2.5rem"}}><i className="el el-pause"/></button>
         }
         return (
             <nav className="fixed bottom-0 left-0 right-0 bg-red white px4" style={{height:"2.5rem"}}>
                 <ProgressBar progress={this.state.progress} duration={this.state.duration}/>
-                <div className="container flex flex-stretch">
-                    <Image src={this.state.episode.image} style={{height: "2.5rem"}} />
-                    <button className="button button-red"><i className="el el-backward" /></button>
-                    {playButton}
-                    <button className="button button-red"><i className="el el-forward" /></button>
-                    <div style={{height:"2.5rem", "lineHeight":"2.5rem"}}>{utils.formatTime(this.state.currentTime)} / {utils.formatTime(this.state.duration)}</div>
+                <div className="container">
+                    <div className="clearfix" style={{height:"2.5rem"}}>
+                        <div className="col col-1"><Image src={this.state.episode.image} style={{height: "2.5rem"}} /></div>
+                        <button className="button button-red col col-1" style={{height:"2.5rem"}}><i className="el el-backward" /></button>
+                        {playButton}
+                        <button className="button button-red col col-1" style={{height:"2.5rem"}}><i className="el el-forward" /></button>
+                        <div className="col col-3" style={{height:"2.5rem", "lineHeight":"2.5rem"}}>{utils.formatTime(this.state.currentTime)} / {utils.formatTime(this.state.duration)}</div>
+                    </div>
                 </div>
             </nav>
         )
