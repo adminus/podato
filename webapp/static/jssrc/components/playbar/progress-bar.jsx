@@ -29,15 +29,16 @@ const ProgressBar = React.createClass({
             background: "black",
             position:"absolute",
             left: 0,
-            top: "-32",
-            transform: "translate("+this.state.pointerX+"px, 0) translate(-50%, 0)",
-            display: this.state.pointerX ? "block": "none"
+            bottom: "100%",
+            transform: "translate("+this.state.pointerX+"px, -16px) translate(-50%, 0)",
+            display: this.state.pointerX ? "block": "none",
+            padding: "0.1em"
         }
         const pointerTriangle = {
             width: "0",
             height: "0",
             borderStyle: "solid",
-            borderWidth: "16px 8px 0 9px",
+            borderWidth: "16px 8px 0 8px",
             borderColor: "#000 transparent transparent transparent",
             position: "absolute",
             top: "100%",
@@ -46,7 +47,7 @@ const ProgressBar = React.createClass({
         };
         return (
             <div ref="element" style={styles} onMouseMove={this.mouseMove} onMouseLeave={this.mouseLeave} onClick={this.click}>
-                <div style={pointerStyles}><div style={pointerTriangle}>&nbsp;</div>{utils.formatTime(this.props.duration*this.state.pointerProgress)}</div>
+                <div style={pointerStyles} ref="pointer"><div style={pointerTriangle}>&nbsp;</div>{utils.formatTime(this.props.duration*this.state.pointerProgress)}</div>
                 <div className="bg-red" style={barStyles}></div>
             </div>
         )
