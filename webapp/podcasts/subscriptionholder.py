@@ -47,6 +47,9 @@ class SubscriptionHolder(object):
         self.run(self.table.get(self.id).update({
             "subscriptions": r.row["subscriptions"].append(podcast.url)
         }))
+        Podcast.run(Podcast.get_table().get(podcast.url).update({
+            "subscribers": (r.row["subscribers"].default(0) + 1)
+        }))
         return SubscribeResult(success=True)
 
     def subscribe_by_url(self, url):
@@ -63,6 +66,9 @@ class SubscriptionHolder(object):
             self.run(self.table.get(self.id).update(
                 {"subscriptions": r.row["subscriptions"].set_difference([podcast.url])}
             ))
+            Podcast.run(Podcast.get_table().get(podcast.url).update({
+                "subscribers": (r.row["subscribers"].default(0) - 1)
+            }))
             return True
         return False
 
@@ -83,6 +89,9 @@ class SubscriptionHolder(object):
         self.run(self.table.get(self.id).update(
             {"subscriptions": r.row["subscriptions"].set_union(not_already_subscribed)}
         ))
+        Podcast.run(Podcast.get_table().get_all(r.args(not_already_subscribed)).update({
+            "subscribers": (r.row["subscribers"].default(0) + 1)
+        }))
         return SubscribeResult(success=True)
 
     def subscribe_multi_by_url(self, urls):
