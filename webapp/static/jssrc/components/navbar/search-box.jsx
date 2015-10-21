@@ -18,8 +18,8 @@ const SearchBox = React.createClass({
             results = <SearchResults results={this.state.results} fetching={this.state.fetching} />
         }
         return (
-            <div style={{padding:"0.5rem"}}>
-                <input type="search" name="search" style={{height:"1.5rem"}} placeholder="Find awesome podcasts." ref="input"
+            <div {...this.props} style={{padding:"0.5rem"}}>
+                <input type="search" name="search" style={{height:"1.5rem", width:"100%"}} placeholder="Find great podcasts." ref="input"
                     onFocus={this.focus} onChange={this.change} onBlur={this.blur} />
                 {results}
             </div>
