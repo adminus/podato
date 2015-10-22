@@ -14,7 +14,7 @@ const SearchBox = React.createClass({
     },
     render(){
         const showResults = (this.state.focus && (this.state.results && this.state.results.length > 0) || this.state.fetching);
-        const results = <SearchResults style={{display: showResults ? "block" : "none"}} results={this.state.results} fetching={this.state.fetching} />
+        const results = showResults ? <SearchResults results={this.state.results} fetching={this.state.fetching} resultClicked={this.resultClicked} /> : null;
         return (
             <div {...this.props} style={{padding:"0.5rem"}}>
                 <input type="search" name="search" style={{height:"1.5rem", width:"100%"}} placeholder="Find great podcasts." ref="input"
@@ -36,7 +36,7 @@ const SearchBox = React.createClass({
         this.setState({focus: true});
     },
     blur(){
-        this.setState({focus: false});
+        setTimeout( () => this.setState({focus: false}));
     },
     change(){
         const query = this.refs.input.getDOMNode().value.trim();
@@ -59,6 +59,10 @@ const SearchBox = React.createClass({
         }else{
             this.setState({fetching: false})
         }
+    },
+    resultClicked(res){
+        this.refs.input.getDOMNode().blur()
+        this.refs.input.getDOMNode().value = res.trackName;
     }
 });
 

@@ -33,7 +33,8 @@ const SearchResults = React.createClass({
         return (this.props.results || []).map((result) => {
             const encodedUrl = encodeURIComponent(result.feedUrl);
             return (
-                    <Link to="podcast" params={{splat: encodedUrl}} title={result.trackName} className="clearfix">
+                    <Link to="podcast" params={{splat: encodedUrl}} title={result.trackName} className="clearfix"
+                        onMouseDown={this.resultClicked} onClick={this.afterResultClicked.bind(this, result)}>
                         <div className="col col-2">
                             <Image src={result.artworkUrl600} className="full-width" />
                         </div>
@@ -44,6 +45,16 @@ const SearchResults = React.createClass({
                     </Link>
                 )
         })
+    },
+    resultClicked(e){
+        console.log("resultClicked called");
+        e.preventDefault();
+    },
+    afterResultClicked(r, e){
+        console.log("afterResultClicked called");
+        if(this.props.resultClicked){
+            this.props.resultClicked(r);
+        }
     }
 });
 
