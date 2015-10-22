@@ -26,7 +26,7 @@ const Navbar = React.createClass({
                         <Link to="home" className="button button-red col col-1">Home</Link>
                         <SearchBox className="col col-4" />
                         {logout}
-                    </div>@
+                    </div>
                 </div>
             </nav>
         )
