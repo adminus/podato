@@ -47,7 +47,6 @@ const Podcast = React.createClass({
         var eps = this.state.podcast.episodes.map((e) => {
             return (<Episode episode={e} podcast={this.state.podcast} />);
         });
-        console.log(eps);
         return eps;
     },
     getInitialState(){

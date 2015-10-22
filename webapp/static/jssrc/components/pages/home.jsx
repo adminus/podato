@@ -55,7 +55,7 @@ const Home = React.createClass({
         if(this.state.authState === "done") {
             return [
                 <h3 key="heading">Subscriptions</h3>,
-                <ImportButton/>,
+                <ImportButton key="import" />,
                 <PodcastGrid podcasts={this.state.userSubscriptions} className="sm-col sm-col-12" key="grid" />,
                 <hr key="hr" />
             ]
