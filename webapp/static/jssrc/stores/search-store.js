@@ -15,6 +15,6 @@ const UsersStore = flux.createStore(class UsersStore{
     onSearch(results){
         this.results = results;
     }
-}, "UsersStore");
+}, "SearchStore");
 
 module.exports = UsersStore;
