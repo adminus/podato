@@ -13,7 +13,7 @@ const SearchBox = React.createClass({
         this.listenTo(SearchStore, this.storeDidChange.bind(this));
     },
     render(){
-        const showResults = (this.state.focus && (this.state.results && this.state.results.length > 0) || this.state.fetching);
+        const showResults = ((this.state.focus && this.state.results !== null) || this.state.fetching);
         const results = showResults ? <SearchResults results={this.state.results} fetching={this.state.fetching} resultClicked={this.resultClicked} /> : null;
         return (
             <div {...this.props} style={{padding:"0.5rem"}}>
@@ -36,7 +36,7 @@ const SearchBox = React.createClass({
         this.setState({focus: true});
     },
     blur(){
-        setTimeout( () => this.setState({focus: false}));
+        setTimeout( () => this.setState({focus: false, results: null}));
     },
     change(){
         const query = this.refs.input.getDOMNode().value.trim();
