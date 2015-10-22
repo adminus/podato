@@ -10,7 +10,7 @@ const SearchResults = require("./search-results.jsx");
 const SearchBox = React.createClass({
     mixins: [ListenerMixin],
     componentWillMount(){
-        this.listenTo(SearchStore, this.storeDidChange.bind(this));
+        this.listenTo(SearchStore, this.storeDidChange);
     },
     render(){
         const showResults = ((this.state.focus && this.state.results !== null) || this.state.fetching);
