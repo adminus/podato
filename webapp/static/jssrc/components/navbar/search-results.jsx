@@ -2,6 +2,8 @@ const React = require("react");
 const Link = require("react-router").Link;
 
 const Image = require("../common/image.jsx");
+const Spinner = require("../common/spinner.jsx");
+
 
 const SearchResults = React.createClass({
     render(){
@@ -13,17 +15,27 @@ const SearchResults = React.createClass({
         }
         return (
             <div className="bg-white border border-black m0 p0" styles={styles}>
+                <div className="clearfix" style={{display: this.props.fetching ? "block": "none"}}>
+                    <div className="col col-12 center">
+                        <Spinner />
+                    </div>
+                </div>
                 {this.getResults()}
             </div>
             )
     },
     getResults(){
-        return this.props.results.map((result) => {
+        if(this.props.results != null && this.props.results.length == 0){
+            return (
+                <p>Nothing found</p>
+            )
+        }
+        return (this.props.results || []).map((result) => {
             const encodedUrl = encodeURIComponent(result.feedUrl);
             return (
                     <Link to="podcast" params={{splat: encodedUrl}} title={result.trackName} className="clearfix">
                         <div className="col col-2">
-                            <Image src={result.artworkUrl600} />
+                            <Image src={result.artworkUrl600} className="full-width" />
                         </div>
                         <div className="col col-10">
                             <p><strong>{result.trackName}</strong></p>

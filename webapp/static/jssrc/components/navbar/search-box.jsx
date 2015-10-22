@@ -13,10 +13,8 @@ const SearchBox = React.createClass({
         this.listenTo(SearchStore, this.storeDidChange.bind(this));
     },
     render(){
-        var results = false;
-        if(this.state.focus && this.state.results && this.state.results.length > 0){
-            results = <SearchResults results={this.state.results} fetching={this.state.fetching} />
-        }
+        const showResults = (this.state.focus && (this.state.results && this.state.results.length > 0) || this.state.fetching);
+        const results = <SearchResults style={{display: showResults ? "block" : "none"}} results={this.state.results} fetching={this.state.fetching} />
         return (
             <div {...this.props} style={{padding:"0.5rem"}}>
                 <input type="search" name="search" style={{height:"1.5rem", width:"100%"}} placeholder="Find great podcasts." ref="input"
@@ -43,14 +41,24 @@ const SearchBox = React.createClass({
     change(){
         const query = this.refs.input.getDOMNode().value.trim();
         this.setState({query: query});
-        if(query.length > 3 && !this.state.fetching){
-            SearchActions.search(query);
-            this.setState({fetching: true})
+        if(query.length > 3){
+            if(!this.state.fetching){
+                SearchActions.search(query);
+                this.setState({fetching: true});
+            }else{
+                this.setState({changedSinceLastFetch: true});
+            }
         }
     },
     storeDidChange(){
         const results = SearchStore.getResults();
         this.setState({results: results});
+        if(this.state.changedSinceLastFetch){
+            SearchActions.search(this.state.query);
+            this.setState({changedSinceLastFetch: false});
+        }else{
+            this.setState({fetching: false})
+        }
     }
 });
 
