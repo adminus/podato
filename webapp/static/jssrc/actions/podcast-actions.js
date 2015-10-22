@@ -89,7 +89,7 @@ const PodcastActions = flux.createActions(class PodcastActions {
     fetchPodcast(podcastId){
         return new Promise((resolve, reject) => {
             api.loaded.then(() => {
-                api.podcasts.getPodcast({podcastId: podcastId}, (resp) => {
+                api.podcasts.getPodcast({podcastId: podcastId, fetch: true}, (resp) => {
                     if(resp.status !== 200){
                         reject(resp.statusText);
                         return
