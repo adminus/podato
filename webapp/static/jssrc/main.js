@@ -9,6 +9,7 @@ api.load(apiRoot, config.get("TRUSTED_CLIENTS[0].CLIENT_ID")[0], Object.keys(con
 
 
 const docReady = require("doc-ready");
+const createHistory = require("history").createHistory
 
 const React = require("react");
 const ReactDOM = require('react-dom');
@@ -22,13 +23,18 @@ const Home = require("./components/pages/home.jsx");
 const Podcast = require("./components/pages/podcast.jsx");
 const User = require("./components/pages/user.jsx");
 
+// Opt-out of persistent state,
+let history = createHistory({
+  queryKey: false
+});
+
 api.loaded.then(() =>{
     console.log("api loaded");
     console.log(api);
 })
 
 const routes = (
-    <Router>
+    <Router history={createHistory()}>
         <Route path="/" component={App}>
             <IndexRoute component={Home} />
             <Route path="podcasts/*" component={Podcast} />
