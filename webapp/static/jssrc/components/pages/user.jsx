@@ -1,5 +1,5 @@
 const React = require("react");
-const Navigation = require('react-router').Navigation;
+const History = require("react-router").History;
 const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const UsersStore = require("../../stores/users-store");
@@ -12,8 +12,7 @@ const SubscriptionsGrid = require("../podcasts/subscriptions-grid.jsx")
 const FollowButton = require("../auth/follow-button.jsx")
 
 const User = React.createClass({
-    mixins: [Navigation, ListenerMixin],
-    contextTypes: {router: React.PropTypes.func},
+    mixins: [History, ListenerMixin],
     render(){
         return (
             <Page>
@@ -55,10 +54,10 @@ const User = React.createClass({
         this.setUser();
     },
     setUser(){
-        const userId = this.context.router.getCurrentParams().userId;
+        const userId = this.props.params.userId;
         if(userId == "me"){
             const me = CurrentUserStore.getState().currentUser.id;
-            this.transitionTo("user", {userId: me});
+            this.history.pushState(null, `/users/${me}`);
         }
         var user = UsersStore.getUser(userId);
 

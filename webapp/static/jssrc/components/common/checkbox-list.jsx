@@ -1,4 +1,5 @@
 const React = require("react");
+const ReactDOM = require("react-dom");
 
 const CheckboxList = React.createClass({
     render(){
@@ -23,7 +24,7 @@ const CheckboxList = React.createClass({
         var values = {}
         for(var i=0; i<this.props.data.length; i++){
             var d = this.props.data[i];
-            values[d.key] = this.refs[d.key].getDOMNode().checked;
+            values[d.key] = ReactDOM.findDOMNode(this.refs[d.key]).checked;
         }
         return values;
     }

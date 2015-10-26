@@ -14,7 +14,6 @@ const PodcastsActions = require("../../actions/podcast-actions");
 
 const Podcast = React.createClass({
     mixins: [ListenerMixin],
-    contextTypes: {router: React.PropTypes.func},
     render(){
         var episodes = this.getEpisodes();
         return (
@@ -45,7 +44,7 @@ const Podcast = React.createClass({
     },
     getEpisodes(){
         var eps = this.state.podcast.episodes.map((e) => {
-            return (<Episode episode={e} podcast={this.state.podcast} />);
+            return (<Episode episode={e} podcast={this.state.podcast} key={e.guid} />);
         });
         return eps;
     },
@@ -69,7 +68,7 @@ const Podcast = React.createClass({
         this.setPodcast();
     },
     setPodcast(){
-        var podcastId = this.context.router.getCurrentParams().splat;
+        var podcastId = this.props.params.splat;
         var podcast = PodcastsStore.getPodcast(decodeURIComponent(podcastId));
 
         if (!podcast){

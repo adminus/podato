@@ -1,5 +1,4 @@
 const React = require("react");
-const RouteHandler = require("react-router").RouteHandler;
 const Navbar = require("./navbar/navbar.jsx");
 const Playbar = require("./playbar/playbar.jsx");
 
@@ -9,7 +8,7 @@ const App = React.createClass({
             <div className="clearfix">
                 <Navbar />
                 <div className="container mt4">
-                    <RouteHandler />
+                    {this.props.children}
                 </div>
                 <Playbar />
             </div>

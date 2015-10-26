@@ -1,4 +1,5 @@
 const React = require("react");
+const ReactDOM = require('react-dom');
 const Link = require("react-router").Link;
 const ListenerMixin = require("alt/mixins/ListenerMixin");
 
@@ -39,7 +40,7 @@ const SearchBox = React.createClass({
         setTimeout( () => this.setState({focus: false, results: null}));
     },
     change(){
-        const query = this.refs.input.getDOMNode().value.trim();
+        const query = ReactDOM.findDOMNode(this.refs.input).value.trim();
         this.setState({query: query});
         if(query.length > 3){
             if(!this.state.fetching){
@@ -61,8 +62,8 @@ const SearchBox = React.createClass({
         }
     },
     resultClicked(res){
-        this.refs.input.getDOMNode().blur()
-        this.refs.input.getDOMNode().value = res.trackName;
+        ReactDOM.findDOMNode(this.refs.input).blur()
+        ReactDOM.findDOMNode(this.refs.input).value = res.trackName;
     }
 });
 

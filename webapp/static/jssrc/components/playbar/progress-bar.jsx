@@ -1,4 +1,5 @@
 const React = require("react");
+const ReactDOM = require('react-dom');
 const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const PlaybackActions = require("../../actions/playback-actions");
@@ -53,7 +54,7 @@ const ProgressBar = React.createClass({
         )
     },
     mouseMove(e){
-        const ow = this.refs.element.getDOMNode().offsetWidth;
+        const ow = ReactDOM.findDOMNode(this.refs.element).offsetWidth;
         this.setState({
             pointerX: e.clientX,
             pointerProgress: e.clientX/ow

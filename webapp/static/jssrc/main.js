@@ -11,9 +11,11 @@ api.load(apiRoot, config.get("TRUSTED_CLIENTS[0].CLIENT_ID")[0], Object.keys(con
 const docReady = require("doc-ready");
 
 const React = require("react");
-const Router = require("react-router");
-const Route = Router.Route;
-const DefaultRoute = Router.DefaultRoute;
+const ReactDOM = require('react-dom');
+const ReactRouter = require("react-router");
+const Route = ReactRouter.Route;
+const IndexRoute = ReactRouter.IndexRoute;
+const Router = ReactRouter.Router;
 
 const App = require("./components/app.jsx");
 const Home = require("./components/pages/home.jsx");
@@ -25,17 +27,18 @@ api.loaded.then(() =>{
     console.log(api);
 })
 
-var routes = (
-    <Route name="app" path="/" handler={App}>
-        <DefaultRoute name="home" handler={Home} />
-        <Route name="podcast" path="podcasts/*/" handler={Podcast} />
-        <Route name="user" path="users/:userId" handler={User} chro
-        />
-    </Route>
-)
+const routes = (
+    <Router>
+        <Route path="/" component={App}>
+            <IndexRoute component={Home} />
+            <Route path="podcasts/*" component={Podcast} />
+            <Route path="users/:userId" component={User} />
+        </Route>
+    </Router>
+);
+
+window.ReactRouter = ReactRouter;
 
 docReady(() => {
-    Router.run(routes, (Handler) => {
-        React.render(<Handler />, document.body);
-    });
+    ReactDOM.render(routes, document.getElementById("app"));
 });

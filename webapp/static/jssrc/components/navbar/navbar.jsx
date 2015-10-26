@@ -22,8 +22,8 @@ const Navbar = React.createClass({
             <nav className="fixed top-0 left-0 right-0 bg-red white" style={{height:"2.5rem"}}>
                 <div className="container">
                     <div className="clearfix" style={{height:"2.5rem"}}>
-                        <Link to="home" className="col col-1" style={{height:"100%"}}><img src="/img/logo.png" style={{height:"100%"}}/></Link>
-                        <Link to="home" className="button button-red col col-1">Home</Link>
+                        <Link to="/" className="col col-1" style={{height:"100%"}}><img src="/img/logo.png" style={{height:"100%"}}/></Link>
+                        <Link to="/" className="button button-red col col-1">Home</Link>
                         <SearchBox className="col col-4" />
                         {logout}
                     </div>
