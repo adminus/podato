@@ -74,9 +74,7 @@ class Podcast(Model):
             logging.debug("found it.")
             return p
         logging.debug("Checking if it might have moved.")
-        res = list(cls.run(cls.get_table().filter(
-            lambda podcast: podcast["previous_urls"].contains(url)
-        )))
+        res = list(cls.run(cls.get_table().get_all(url, index="previous_urls")))
 
         if res:
             logging.debug("found it.")
