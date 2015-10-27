@@ -1,4 +1,5 @@
 const React = require("react");
+const moment = require("moment");
 const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 
@@ -24,6 +25,7 @@ const Podcast = React.createClass({
                         <p><SubscribeButton podcast={this.state.podcast.id} /></p>
                         <p><strong>by:</strong> {this.state.podcast.author}</p>
                         <p><strong>subscribers:</strong> {this.state.podcast.subscribers}</p>
+                        <p><strong>Updated:</strong> {moment(new Date(this.state.podcast.last_fetched)).fromNow()}</p>
                     </div>
                     <div className="col col-12 md-col-9 p2">
                         <h1 className="clearfix">{this.state.podcast.title}</h1>

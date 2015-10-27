@@ -19,7 +19,7 @@
   "bugs": {
     "url": "https://github.com/asm-products/podato-web/issues"
   },
-  "homepage": "https://github.com/asm-products/podato-web",
+  "homepage": "https://github.com/bigblind/podato",
   "dependencies": {
     "JSONPath": "^0.10.0",
     "alt": "^0.17.1",
