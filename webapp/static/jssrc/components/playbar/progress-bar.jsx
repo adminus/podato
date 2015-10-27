@@ -16,12 +16,13 @@ const ProgressBar = React.createClass({
             top: "-" + height,
             height: height,
             background : "rgb(241, 221, 0)",
-            transition: "height 0.3s, top 0.3s"
+            transition: "height 0.3s, top 0.3s",
+            padding: "0px",
+            margin: "0px"
         };
         const barStyles = {
-            width: "1%",
-            transformOrigin: "left top",
-            transform: "scale("+(this.props.progress * 100)+", 1)",
+            width: "100%",
+            transform: "translate(-"+((1-this.props.progress) * 100).toPrecision(3)+"%, 0)",
             height: "100%",
             background: "rgba(0, 0, 0, 0.7)",
             content: "\t"

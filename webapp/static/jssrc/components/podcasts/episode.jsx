@@ -8,7 +8,6 @@ const PlaybackStore = require("../../stores/playback-store");
 var Episode = React.createClass({
     mixins: [ListenerMixin],
     render(){
-        console.log("render called...");
         var published = new Date(this.props.episode.published);
         return (
             <div className="clearfix mxn1 py2 border-bottom border-silver">
