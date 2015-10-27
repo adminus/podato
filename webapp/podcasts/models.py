@@ -48,7 +48,7 @@ class Podcast(Model):
         )
 
     @classmethod
-    def get_or_fetch(cls, url):
+    def get_or_fetch(cls, url, **kwargs):
         """Get a podcast by its feed url. If it's not in the db, fetch it."""
         p = cls.get_by_url(url)
         if not p:
@@ -62,19 +62,24 @@ class Podcast(Model):
             from webapp.podcasts import crawler
             results = list(crawler.fetch(url).results[0].collect())
             logging.debug("Fetched, got %s." % results)
-            p = cls.get_by_url(url)
+            p = cls.get_by_url(url, **kwargs)
         return p
 
     @classmethod
-    def get_by_url(cls, url):
+    def get_by_url(cls, url, max_episodes=30):
         """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
         logging.debug("Retrieving podcast: %s" % url)
-        p = cls.get(url)
+        p = cls.run(
+            cls.get_table().get(url).merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes)})
+        )
         if p:
             logging.debug("found it.")
-            return p
+            return cls.from_dict(p)
         logging.debug("Checking if it might have moved.")
-        res = list(cls.run(cls.get_table().get_all(url, index="previous_urls")))
+        res = list(cls.run(
+            cls.get_table().get_all(url, index="previous_urls")
+               .merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes)})
+        ))
 
         if res:
             logging.debug("found it.")

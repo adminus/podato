@@ -17,6 +17,7 @@ ns = api.namespace("podcasts")
 
 parser = api.parser()
 parser.add_argument(name="fetch", required=False, location="args", type=bool)
+parser.add_argument(name="max_episodes", required=False, location="args", type=int, default=30)
 
 @ns.route("/<path:podcastId>", endpoint="podcast")
 @api.doc(params={"podcastId":"A podcast's id (the same as its URL. If the API returns a podcast with a different URL, it means the podcast has moved."})
@@ -26,12 +27,14 @@ class PodcastResource(Resource):
     @api.doc(id="getPodcast", parser=parser)
     def get(self, podcastId):
         """Get a podcast by id."""
-        fetch = parser.parse_args().get("fetch")
+        args = parser.parse_args()
+        fetch = args.get("fetch")
+        max_episodes = args.get("max_episodes")
         podcastId = urllib.unquote(podcastId)
         if fetch:
-            podcast = Podcast.get_or_fetch(podcastId)
+            podcast = Podcast.get_or_fetch(podcastId, max_episodes=max_episodes)
         else:
-            podcast = Podcast.get_by_url(podcastId)
+            podcast = Podcast.get_by_url(podcastId, max_episodes=max_episodes)
 
         if podcast == None:
             abort(404, message="Podcast not found: %s" % podcastId)
