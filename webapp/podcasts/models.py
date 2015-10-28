@@ -70,7 +70,7 @@ class Podcast(Model):
         """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
         logging.debug("Retrieving podcast: %s" % url)
         p = cls.run(
-            cls.get_table().get(url).merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes)})
+            (cls.get_table().get(url).merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes)})).default(None)
         )
         if p:
             logging.debug("found it.")

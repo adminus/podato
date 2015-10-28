@@ -34,6 +34,11 @@ const Podcast = React.createClass({
                         <p className="clearfix"><Image src={this.state.podcast.image} className="left md-hide m1" style={{width:"10%"}} />{this.state.podcast.description}</p>
                         <hr />
                         {episodes}
+                        <div className="clearfix py2">
+                            <div className="col col-12 center">
+                                <a className="blue button button-outline">more episodes</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="clearfix mxn2">
