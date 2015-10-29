@@ -5,6 +5,7 @@ const ListenerMixin = require("alt/mixins/ListenerMixin");
 
 const Page = require("../common/page.jsx");
 const Image = require("../common/image.jsx");
+const Spinner = require("../common/spinner.jsx");
 const SubscribeButton = require("../podcasts/subscribe-button.jsx");
 const Episode = require("../podcasts/episode.jsx");
 
@@ -17,6 +18,25 @@ const Podcast = React.createClass({
     mixins: [ListenerMixin],
     render(){
         var episodes = this.getEpisodes();
+        var moreEpisodesButton = null;
+        if(this.state.podcast && this.state.podcast.has_more_episodes && !this.state.fetchingEpisodes){
+            moreEpisodesButton = (
+                <div className="clearfix py2">
+                    <div className="col col-12 center">
+                        <a className="blue button button-outline" onClick={this.fetchEpisodes}>more episodes</a>
+                    </div>
+                </div>
+            )
+        }
+        if(this.state.fetchingEpisodes){
+            moreEpisodesButton = (
+                <div className="clearfix py2">
+                    <div className="col col-12 center">
+                        <Spinner />
+                    </div>
+                </div>
+            )
+        }
         return (
             <Page>
                 <div className="clearfix mxn2">
@@ -34,11 +54,7 @@ const Podcast = React.createClass({
                         <p className="clearfix"><Image src={this.state.podcast.image} className="left md-hide m1" style={{width:"10%"}} />{this.state.podcast.description}</p>
                         <hr />
                         {episodes}
-                        <div className="clearfix py2">
-                            <div className="col col-12 center">
-                                <a className="blue button button-outline">more episodes</a>
-                            </div>
-                        </div>
+                        {moreEpisodesButton}
                     </div>
                 </div>
                 <div className="clearfix mxn2">
@@ -83,6 +99,12 @@ const Podcast = React.createClass({
         }else{
             this.setState({podcast:podcast});
         }
+    },
+    fetchEpisodes(){
+        this.setState({fetchingEpisodes: true});
+        PodcastsActions.fetchEpisodes(this.state.podcast.id, this.state.podcast.episodes_page + 1).then(() => {
+            this.setState({fetchingEpisodes: false});
+        });
     }
 });
 

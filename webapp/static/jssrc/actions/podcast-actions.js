@@ -100,6 +100,21 @@ const PodcastActions = flux.createActions(class PodcastActions {
         });
     }
 
+    fetchEpisodes(podcastId, page, perPage=30){
+        return new Promise((resolve, reject) => {
+            api.loaded.then(() => {
+                api.podcasts.getEpisodes({podcastId: podcastId, perPage: perPage, page: page}, (resp) => {
+                    if(resp.status !== 200){
+                        reject(resp.statusText);
+                        return
+                    }
+                    resolve();
+                    this.dispatch({result: resp.obj, podcastId: podcastId});
+                });
+            });
+        });
+    }
+
     fetchSubscriptions(userId){
         userId = userId || "me"
         setTimeout(() => this.actions.fetchingSubscriptions(userId));
