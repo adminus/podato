@@ -27,3 +27,11 @@ def init_celery(podatoApp):
                 return task_base.__call__(self, *args, **kwargs)
 
     app.Task = TaskWithAppContext
+
+# Make sure the app is instantiated by the time this module is imported
+try:
+    podatoApp.config
+except RuntimeError:
+    from webapp.app import make_app
+    make_app()
+
