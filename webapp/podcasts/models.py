@@ -71,6 +71,8 @@ class Podcast(Model):
     @classmethod
     def get_by_url(cls, url, max_episodes=30):
         """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
+        max_episodes = max_episodes or 30
+        
         logging.debug("Retrieving podcast: %s" % url)
         p = cls.run(
             (cls.get_table().get(url).merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes + 1)})).default(None)
