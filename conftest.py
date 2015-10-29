@@ -1,8 +1,8 @@
 import pytest
-import cache
 import mockredis
 import datetime
 
+import webapp.cache as cache
 
 class ChangableClock(object):
     def __init__(self, now=None):

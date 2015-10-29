@@ -1,4 +1,5 @@
 import cPickle
+import functools
 
 from flask.ext.redis import Redis
 
@@ -30,7 +31,7 @@ def set_multi(pairs, expires=0, key_prefix=""):
     for key, value in pairs.iteritems():
         serialized[key] = _serialize(value)
     if key_prefix:
-        pairs = _add_key_prefix(serialized, key_prefix)
+        serialized = _add_key_prefix(serialized, key_prefix)
     if expires == 0:
         return redis.mset(serialized)
     p = redis.pipeline()
@@ -72,3 +73,42 @@ def _deserialize(v):
 
 def _serialize(v):
     return cPickle.dumps(v)
+
+class _ExplicitNone(object):
+    pass
+
+
+def cached_function(expires=0):
+    """Decorator for caching the result of a function
+
+    The function is cached based on its module, name and arguments,
+    """
+
+    def decorator(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            key = _key_from_function_args(f, *args, **kwargs)
+            value = get(key)
+            if value is None:
+                value = f(*args, **kwargs)
+                store_value = value
+                if value is None:
+                    store_value = _ExplicitNone
+                set(key, store_value)
+            if value is _ExplicitNone:
+                return None
+
+            return value
+
+        return wrapper
+
+    return decorator
+
+
+def _key_from_function_args(f, *args, **kwargs):
+    module = getattr(f, "__module__", "_")
+    name = getattr(f, "__name__", "_")
+    argparts = [str(arg) for arg in args]
+    kwparts = ["%s=%s" % (k, v) for k, v in kwargs.iteritems()]
+    params = ",".join(argparts + kwparts)
+    return "%s.%s(%s)" % (module, name, params)
