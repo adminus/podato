@@ -82,13 +82,25 @@ def cached_function(expires=0):
     """Decorator for caching the result of a function
 
     The function is cached based on its module, name and arguments,
+
+    arguments:
+      - expires: the time in seconds for cached values to expire
+
+    returns a version of the function whose value is cached. This returned value
+    takes one extra optional parameter called 'force', which forces the actual function to run.
+    The returned value will be stored in the cache.
     """
 
     def decorator(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
+            force = False
+            if "force" in kwargs:
+                force = kwargs.pop("force")
             key = _key_from_function_args(f, *args, **kwargs)
-            value = get(key)
+            value = None
+            if not force:
+                value = get(key)
             if value is None:
                 value = f(*args, **kwargs)
                 store_value = value

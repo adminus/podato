@@ -103,3 +103,19 @@ def test_cached_function_with_different_args(mock_cache):
     assert test_function(1, 2, c="c", d={}) == "12c{}"
     assert called[0] == 4
 
+
+def test_cached_function_with_force(mock_cache):
+    called = [0]
+    @cache.cached_function(expires=0    )
+    def test_function(a, b, c=3, d=4):
+        called[0] += 1
+        return "%s%s%s%s" % (a, b, c, d)
+
+    res1 = test_function(1, 2, 3)
+    res2 = test_function(1, 2, 3)
+    res3 = test_function(1, 2, 3, force=True)
+
+    assert res1 == "1234"
+    assert res1 == res2
+    assert res3 == res2
+    assert called[0] == 2
