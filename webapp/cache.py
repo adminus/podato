@@ -94,7 +94,7 @@ def cached_function(expires=0):
                 store_value = value
                 if value is None:
                     store_value = _ExplicitNone
-                set(key, store_value)
+                set(key, store_value, expires=expires)
             if value is _ExplicitNone:
                 return None
 
