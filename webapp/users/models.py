@@ -62,6 +62,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         return users == 0
 
     def follow(self, other_user_ids):
+        """Follow the users with the given ids"""
         if not isinstance(other_user_idss, list):
             other_user_idss = [other_user_ids]
         self.run(self.table.get(self.id).update(
@@ -69,6 +70,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         ))
 
     def unfollow(self, other_user_ids):
+        """unfollow the users with the given ids"""
         if not isinstance(other_user_ids, list):
             other_user_ids = [other_user_ids]
         self.run(self.table.get(self.id).update(
