@@ -9,7 +9,7 @@ from webapp.utils import AttributeHider
 from webapp.api.oauth import oauth
 from webapp.api.oauth import AuthorizationRequired
 from webapp.api.blueprint import api
-from webapp.api.representations import podcast_full_fields, podcast_fields
+from webapp.api.representations import podcast_full_fields, podcast_fields, episode_list
 from webapp.podcasts import Podcast
 
 
@@ -40,6 +40,21 @@ class PodcastResource(Resource):
             abort(404, message="Podcast not found: %s" % podcastId)
         podcast.ensure_episode_images()
         return podcast
+
+parser = api.parser()
+parser.add_argument(name="per_page", required=False, location="args", type=int)
+parser.add_argument(name="page", required=False, location="args", type=int)
+
+@ns.route("/details/<path:podcastId>/episodes", endpoint="episodes")
+@api.doc(params={"podcastId":"A podcast's id (the same as its URL)"})
+class EpisodesResource(Resource):
+    """Resource that represent a podcast's episodes"""
+
+    @api.marshal_with(episode_list)
+    @api.doc(id="getEpisodes", parser=parser)
+    def get(self, podcastId):
+        args = parser.parse_args()
+        return Podcast.get_episodes(podcastId, args.get("per_page"), args.get("page"))
 
 queryParser = api.parser()
 queryParser.add_argument(name="order", required=False, location="args", default="subscriptions")

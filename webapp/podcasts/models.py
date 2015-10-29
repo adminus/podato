@@ -31,6 +31,8 @@ class Podcast(Model):
                   "image", "categories", "owner", "last_fetched", "previous_urls",
                   "episodes", "subscribers", "errors", "complete"]
 
+    has_more_episodes = False
+
     @classmethod
     def get_update_needed(cls):
         """Returns an iterable of podcasts that need to be updated. It is only
@@ -42,6 +44,7 @@ class Podcast(Model):
         )]
 
     def update(self, data):
+        """Update the podcast with new data."""
         data = self.prepare_value(data)
         return self.run(
             self.table.get(self.url).update(data)
@@ -70,23 +73,30 @@ class Podcast(Model):
         """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
         logging.debug("Retrieving podcast: %s" % url)
         p = cls.run(
-            (cls.get_table().get(url).merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes)})).default(None)
+            (cls.get_table().get(url).merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes + 1)})).default(None)
         )
         if p:
             logging.debug("found it.")
-            return cls.from_dict(p)
+            p = cls.from_dict(p)
+            p._enforce_episode_limit(max_episodes)
+            return p
         logging.debug("Checking if it might have moved.")
         res = list(cls.run(
             cls.get_table().get_all(url, index="previous_urls")
-               .merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes)})
+               .merge(lambda podcast: {"episodes": podcast["episodes"].limit(max_episodes + 1)})
         ))
 
         if res:
             logging.debug("found it.")
-            return cls.from_dict(res[0])
+            p = cls.from_dict(res[0])
+            p._enforce_episode_limit(max_episodes)
+            return p
         return None
 
-
+    def _enforce_episode_limit(self, max_episodes):
+        if len(self.episodes) > max_episodes:
+            self.has_more_episodes = True
+        self.episodes = self.episodes[:max_episodes]
 
     @classmethod
     def delete_by_url(cls, url):
@@ -118,7 +128,20 @@ class Podcast(Model):
         return d
 
     @classmethod
-    def query(cls, order=None, category=None, author=None, language=None, page=1, per_page=30, fields=None  ):
+    def query(cls, order=None, category=None, author=None, language=None, page=1, per_page=30, fields=None):
+        """Get all podcasts that match certain criteria.
+
+        arguments:
+          - order: the field to order podcasts by.
+          - category: if supplied, only get podcasts of the given category.
+          - author: if supplied, only get podcasts by the given author.
+          - language: if supplied, only get podcasts in the given language.
+          - page: get the nth page of results, default: 1.
+          - per_page = return n podcasts per page.
+          - fields: which fields to return, default: ["url", "title", "author", "image", "description", "categories"]
+
+        returns: a list of Podcasts
+        """
         if page < 3:
             cached = cls._query_cached(order=order, category=category, author=author, language=language, page=page, per_page=per_page)
             if cached:
@@ -164,10 +187,39 @@ class Podcast(Model):
     def _make_query_key(self, *args):
         return "|".join([str(a) for a in args])
 
+    @classmethod
+    def get_episodes(cls, url, per_page=30, page=1):
+        """Get episodes of the given podcast
+
+        arguments:
+          - url: the url of the podcast to retrieve episodes for.
+          - per_page: the number of episodes to return.
+          - page: return the nth page of episodes.
+
+        returns: a Podcast instance that only has an 'episodes' and a 'has_more_episodes' property.
+        """
+        per_page = per_page or 30
+        page = page or 1
+        p = cls.run(
+            (cls.get_table().get(url).pluck("__type", "episodes", "image")
+               .merge(lambda podcast: {"episodes": podcast["episodes"].skip(per_page*(page-1)).limit(per_page + 1)})
+            ).default(None)
+        )
+        if not p:
+            return None
+
+        p = cls.from_dict(p)
+        p._enforce_episode_limit(per_page)
+        p.ensure_episode_images()
+        p.image = None
+        return p
+
     def ensure_episode_images(self):
+        """Ensure that every episode has an image"""
         for episode in self.episodes:
             if not episode.image:
                 episode.image = self.image
+
 
 
 Person.register()

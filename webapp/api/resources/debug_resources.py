@@ -5,7 +5,7 @@ from webapp.api.oauth import AuthorizationRequired
 from webapp.api.blueprint import api
 from webapp.api.oauth import oauth
 
-ns = api.namespace("debug")
+ns = api.namespace("debug_")
 
 def dictify(d, seen=None, depth=0):
     seen = seen or []
