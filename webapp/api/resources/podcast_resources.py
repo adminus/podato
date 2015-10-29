@@ -17,10 +17,14 @@ ns = api.namespace("podcasts")
 
 parser = api.parser()
 parser.add_argument(name="fetch", required=False, location="args", type=bool)
-parser.add_argument(name="max_episodes", required=False, location="args", type=int, default=30)
+parser.add_argument(name="maxEpisodes", required=False, location="args", type=int, default=30)
 
 @ns.route("/<path:podcastId>", endpoint="podcast")
-@api.doc(params={"podcastId":"A podcast's id (the same as its URL. If the API returns a podcast with a different URL, it means the podcast has moved."})
+@api.doc(params={
+    "podcastId":"A podcast's id (the same as its URL. If the API returns a podcast with a different URL, it means the podcast has moved.",
+    "fetch": "Whether to fetch the podcast if it's not in the database.",
+    "maxEpisodes": "The maximum number of episodes to return."
+})
 class PodcastResource(Resource):
     """Resource that represents a podcast."""
     @api.marshal_with(podcast_full_fields)
@@ -29,7 +33,7 @@ class PodcastResource(Resource):
         """Get a podcast by id."""
         args = parser.parse_args()
         fetch = args.get("fetch")
-        max_episodes = args.get("max_episodes")
+        max_episodes = args.get("maxEpisodes")
         podcastId = urllib.unquote(podcastId)
         if fetch:
             podcast = Podcast.get_or_fetch(podcastId, max_episodes=max_episodes)
@@ -42,11 +46,15 @@ class PodcastResource(Resource):
         return podcast
 
 parser = api.parser()
-parser.add_argument(name="per_page", required=False, location="args", type=int)
+parser.add_argument(name="perPage", required=False, location="args", type=int)
 parser.add_argument(name="page", required=False, location="args", type=int)
 
 @ns.route("/details/<path:podcastId>/episodes", endpoint="episodes")
-@api.doc(params={"podcastId":"A podcast's id (the same as its URL)"})
+@api.doc(params={
+    "podcastId":"A podcast's id (the same as its URL)",
+    "perPage": "The number of episodes to return per page.",
+    "page": "The page of results to return."
+})
 class EpisodesResource(Resource):
     """Resource that represent a podcast's episodes"""
 
@@ -54,7 +62,7 @@ class EpisodesResource(Resource):
     @api.doc(id="getEpisodes", parser=parser)
     def get(self, podcastId):
         args = parser.parse_args()
-        return Podcast.get_episodes(podcastId, args.get("per_page"), args.get("page"))
+        return Podcast.get_episodes(podcastId, args.get("perPage"), args.get("page"))
 
 queryParser = api.parser()
 queryParser.add_argument(name="order", required=False, location="args", default="subscriptions")
