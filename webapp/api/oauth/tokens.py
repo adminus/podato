@@ -92,11 +92,13 @@ class BearerToken(BaseToken):
                    expires=expires)
 
     @classmethod
+    @cache.cached_function(expires=3600)
     def get_by_access_token(cls, access_token):
         """Get a Bearer token by access token."""
         return cls.get(access_token)
 
     @classmethod
+    @cache.cached_function(expires=3600)
     def get_by_refresh_token(cls, refresh_token):
         """Get a Bearer token by its refresh token."""
         result = list(cls.run(cls.table.get_all(refresh_token, index="refresh_token")))
