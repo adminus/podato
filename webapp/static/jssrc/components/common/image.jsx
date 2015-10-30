@@ -32,7 +32,7 @@ const Image = React.createClass({
             return
         }
 
-        this.setState({src: "https://podato-images.appspot.com/"+width+"?url="+ src});
+        this.setState({src: "http://res.cloudinary.com/podato/image/fetch/w_"+width+"/"+ encodeURIComponent(src)});
     }
 });
 
