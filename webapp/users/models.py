@@ -5,6 +5,7 @@ import logging
 import uuid
 
 from webapp.db import r, Model
+from webapp import cache
 
 from webapp.users import auth
 from webapp.podcasts import SubscriptionHolder
@@ -47,6 +48,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         return instance
 
     @classmethod
+    @cache.cached_function(expires=3600)
     def get_by_id(cls, id):
         return cls.from_dict(
             cls.run(
@@ -55,6 +57,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
         )
 
     @classmethod
+    @cache.cached_function(expires=0)
     def is_username_available(cls, username):
         """Returns True if no user with the given username exists, False otherwise"""
         users = cls.run(cls.get_table().get_all(username, index="username").count())
