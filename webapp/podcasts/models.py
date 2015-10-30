@@ -46,10 +46,10 @@ class Podcast(Model):
     def update(self, data):
         """Update the podcast with new data."""
         data = self.prepare_value(data)
+        self.invalidate_caches()
         return self.run(
             self.table.get(self.url).update(data)
         )
-    self.invalidate_caches()
 
     def invalidate_caches(self):
         self.get_by_url(url, force=True)
