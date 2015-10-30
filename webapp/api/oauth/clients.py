@@ -4,6 +4,7 @@ This module contains models for oauth clients.
 import logging
 
 from webapp.db import Model, r
+from webapp import cache
 from webapp import utils
 
 from flask import current_app
@@ -74,6 +75,7 @@ class Application(Model):
         return client
 
     @classmethod
+    @cache.cached_function(expires=3600*24)
     def get_by_name(cls, name):
         return cls.get(name)
 
@@ -153,7 +155,15 @@ class Client(Model):
         """Gets the Client with the given id."""
         # Overriding this to return trusted clients.
         logging.debug("Retrieving client with id %s (trusted: %s)" % (id, id in TRUSTED_CLIENTS))
-        return TRUSTED_CLIENTS.get(id) or cls.from_dict(cls.get(id))
+        client = TRUSTED_CLIENTS.get(id)
+        if not client:
+            client = cache.get("client-%s" % id)
+
+        if not client:
+            client = cls.from_dict(cls.get(id))
+            cache.set("client-%s" % id, client)
+
+        return client
 
 Client.register()
 
