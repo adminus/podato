@@ -49,6 +49,17 @@ class Podcast(Model):
         return self.run(
             self.table.get(self.url).update(data)
         )
+    self.invalidate_caches()
+
+    def invalidate_caches(self):
+        self.get_by_url(url, force=True)
+        has_more = True
+        i = 1
+        while has_more:
+            has_more=cls.get_episodes(url=self.url, page=i, per_page=30, force=True).has_more_episodes
+            i += 1
+        
+
 
     @classmethod
     def get_or_fetch(cls, url, **kwargs):
@@ -69,6 +80,7 @@ class Podcast(Model):
         return p
 
     @classmethod
+    @cache.cached_function(expires=1200)
     def get_by_url(cls, url, max_episodes=30):
         """Get a podcast by its feed url. If the podcast has moved, the podcast at its new url will be returned."""
         max_episodes = max_episodes or 30
@@ -130,6 +142,7 @@ class Podcast(Model):
         return d
 
     @classmethod
+    @cache.cached_function(expires=120)
     def query(cls, order=None, category=None, author=None, language=None, page=1, per_page=30, fields=None):
         """Get all podcasts that match certain criteria.
 
@@ -144,11 +157,6 @@ class Podcast(Model):
 
         returns: a list of Podcasts
         """
-        if page < 3:
-            cached = cls._query_cached(order=order, category=category, author=author, language=language, page=page, per_page=per_page)
-            if cached:
-                return cached
-
         query = cls.get_table()
         if order:
             indexed = ["subscribers", "author"]
@@ -172,24 +180,10 @@ class Podcast(Model):
         query = query.pluck("__type", *fields)
 
         results = [cls.from_dict(p) for p in cls.run(query)]
-        cls._cache_query(results, order, category, author, language, page, per_page)
         return results
 
     @classmethod
-    def _query_cached(cls, order=None, category=None, author=None, language=None, page=1, per_page=30):
-        key = cls._make_query_key(order, category, author, language, page, per_page)
-        return cache.get(key)
-
-    @classmethod
-    def _cache_query(cls, results, *args):
-        key = cls._make_query_key(*args)
-        return cache.set(key, results)
-
-    @classmethod
-    def _make_query_key(self, *args):
-        return "|".join([str(a) for a in args])
-
-    @classmethod
+    @cache.cached_function(expires=1200)
     def get_episodes(cls, url, per_page=30, page=1):
         """Get episodes of the given podcast
 
