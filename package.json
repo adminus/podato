@@ -45,7 +45,7 @@
     "resolve": "^1.1.5",
     "sprintf": "^0.1.5",
     "static-module": "^1.1.2",
-    "swagger-client": "^2.1.6",
+    "swagger-client": "git://github.com/bigblind/swagger-js#formdata-fix",
     "through": "^2.3.6",
     "through2": "^0.6.3",
     "vinyl-buffer": "^1.0.0",
