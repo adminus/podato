@@ -16,7 +16,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
     """Model that represents a user."""
 
     attributes = ["id", "username", "primary_email", "email_addresses", "avatar_url",
-                  "following", "joined"]
+                  "following", "joined", "is_new", "is_email_verified"]
 
     @classmethod
     def create(cls, username, email, avatar_url=None):
@@ -43,7 +43,9 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
             following=[],
             joined=datetime.datetime.now(),
             provided_identities=[],
-            subscriptions=[]
+            subscriptions=[],
+            is_new=True,
+            is_email_verified=False
         )
         return instance
 
@@ -55,6 +57,30 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
                 cls.get_table().get(id)
             )
         )
+
+    def update_profile(self, username=None, email=None, avatar_url=None):
+        errors = []
+        if username:
+            username = utils.strip_control_chars(username)
+            if self.is_username_available(username):
+                self.username = username
+            else:
+                errors.append("The username you entered is taken.")
+
+        if email:
+            if "@" in email:
+                self.primary_email = email
+            else:
+                errors.append("That email address is invalid.")
+
+        if avatar_url:
+            try:
+                utils.validate_url(avatar_url)
+                self.avatar_url = avatar_url
+            except ValueError:
+                errors.append("The avatar url is invalid.")
+
+        return errors
 
     @classmethod
     @cache.cached_function(expires=0)

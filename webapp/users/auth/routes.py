@@ -72,4 +72,24 @@ def authorized(provider):
     _validate_next(next)
     user = models.User.login(provider, resp)
     session.create_session_token(user)
+    if user.is_new:
+        return redirect(url_for("auth.signup", next=next))
     return redirect(next)
+
+
+@users_blueprint.route("/signup", methods=["GET", "POST"])
+def signup():
+    user = session.get_user()
+    username = request.values.get("username", user.username)
+    email = request.values.get("email", user.primary_email)
+    next = request.values.get("next")
+
+    errors = []
+    if request.method == "POST":
+        errors = user.update_profile(email=email, username=username)
+        if len(errors) == 0:
+            user.is_new = False
+            user.save()
+            return redirect(next)
+
+    return render_template("signup.html", email=email, username=username, next=next, errors=errors)
