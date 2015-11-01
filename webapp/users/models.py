@@ -60,7 +60,7 @@ class User(Model, auth.ProviderTokenHolder, SubscriptionHolder):
 
     def update_profile(self, username=None, email=None, avatar_url=None):
         errors = []
-        if username:
+        if username and username != user.username:
             username = utils.strip_control_chars(username)
             if self.is_username_available(username):
                 self.username = username

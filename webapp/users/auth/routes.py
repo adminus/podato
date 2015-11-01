@@ -86,7 +86,7 @@ def signup():
 
     errors = []
     if request.method == "POST":
-        errors = user.update_profile(email=email, username=username)
+        errors = user.update_profile(email=email, username=input_username)
         if len(errors) == 0:
             user.is_new = False
             user.save()
