@@ -11,7 +11,7 @@ const PodcastTile = React.createClass({
                             <Image src={this.props.podcast.image} alt="" className="full-width "/>
                         </div>
                         <div className="col col-10 md-col-12">
-                            <p className="px1 overflow-hidden" style={{textOverflow: "ellipsis", whiteSpace: "nowrap"}}>{this.props.podcast.title}</p>
+                            <p className="px1 overflow-hidden" style={{height: "3rem", textOverflow: "ellipsis", overflow: "hidden", WebkitBoxOrient: "vertical", display: "-webkit-box"}}>{this.props.podcast.title}</p>
                         </div>
                     </Link>
                 </div>);
