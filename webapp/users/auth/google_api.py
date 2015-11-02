@@ -25,7 +25,7 @@ class GoogleProvider(object):
     @classmethod
     def authorize(cls, callback, state=None, **kwargs):
         flow = cls.make_flow(callback)
-        return redirect(flow.step1_get_authorize_url())
+        return redirect(flow.step1_get_authorize_url(state=state))
 
     @classmethod
     def authorized_response(cls):
@@ -45,5 +45,5 @@ class GoogleProvider(object):
         return apiclient.discovery.build(service, version, http=http)
 
     @classmethod
-    def getUser(cls, access_token=None, user_id="me"):
-        return cls.get_service("plus", "v1").people().get(userId=user_id)
+    def get_user(cls, access_token=None, user_id="me"):
+        return cls.get_service("plus", "v1", access_token=access_token).people().get(userId=user_id).execute()

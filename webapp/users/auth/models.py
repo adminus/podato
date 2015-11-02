@@ -4,7 +4,7 @@ from flask import abort
 from webapp.db import Model, r
 
 from webapp.users.auth import facebook_api
-from webapp.users.auth.providers import TwitterProvider
+from webapp.users.auth.providers import TwitterProvider, GoogleProvider
 
 class ProvidedIdentity(Model):
     attributes = ["provider", "user_id", "access_token"]
@@ -120,4 +120,15 @@ class ProviderTokenHolder(object):
             access_token = google_response["access_token"]
         except:
             raise ValueError("%s: %s\n%s" % (google_response.type, google_response.message, google_response.data))
-        raise ValueError("response: %s" % google_response)
+            return
+
+        goog_user = GoogleProvider.get_user(access_token=access_token)
+        user = cls.get_by_provided_identity("google", goog_user.get("id"))
+        if not user:
+            user = cls.create(goog_user.get("displayName"),
+                              goog_user.get("emails")[0].get("value"),
+                              goog_user.get("image").get("url"))
+            user.save()
+            logging.debug("Saved new user.")
+        user.add_provided_identity("google", goog_user.get('id'), access_token)
+        return user
