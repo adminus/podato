@@ -80,13 +80,13 @@ def authorized(provider):
 @users_blueprint.route("/signup", methods=["GET", "POST"])
 def signup():
     user = session.get_user()
-    username = request.values.get("username", user.username)
-    email = request.values.get("email", user.primary_email)
+    username = request.values.get("username", user.username) or ""
+    email = request.values.get("email", user.primary_email) or ""
     next = request.values.get("next")
 
     errors = []
     if request.method == "POST":
-        errors = user.update_profile(email=email, username=input_username)
+        errors = user.update_profile(email=email, username=username)
         if len(errors) == 0:
             user.is_new = False
             user.save()
