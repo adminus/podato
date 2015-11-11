@@ -63,7 +63,7 @@ class Test(Resource):
     @api.doc(id="test")
     def get(self):
         valid, req = oauth.verify_request([])
-        if not req.client.app.trusted:
+        if not req.client.get_app().trusted:
             raise AuthorizationRequired
         return dictify(req)
 
