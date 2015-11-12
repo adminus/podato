@@ -22,6 +22,7 @@ const App = require("./components/app.jsx");
 const Home = require("./components/pages/home.jsx");
 const Podcast = require("./components/pages/podcast.jsx");
 const User = require("./components/pages/user.jsx");
+const GraphQL = require("./components/pages/graphql.jsx");
 
 // Opt-out of persistent state,
 let history = createHistory({
@@ -40,11 +41,12 @@ const routes = (
             <Route path="podcasts/*" component={Podcast} />
             <Route path="users/:userId" component={User} />
         </Route>
+        <Route path="/graphql" component={GraphQL}/>
     </Router>
 );
 
 window.ReactRouter = ReactRouter;
 
 docReady(() => {
-    ReactDOM.render(routes, document.getElementById("app"));
+    ReactDOM.render(routes, document.body);
 });

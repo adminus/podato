@@ -1,13 +1,10 @@
 from flask import g
 from flask import current_app
-from gevent.local import local
 
 import rethinkdb as r
 
 from datetime import datetime
 import logging
-
-local = local()
 
 def get_connection():
     host = current_app.config.get("RETHINKDB_HOST")
@@ -15,7 +12,7 @@ def get_connection():
     db = current_app.config.get("RETHINKDB_DB")
     auth = current_app.config.get("RETHINKDB_AUTH")
 
-    conn = getattr(local, "_db_conn", None)
+    conn = getattr(g, "_db_conn", None)
     if not conn:
         conn = r.connect(host, port, db, auth)
         g._db_conn = conn
@@ -24,7 +21,7 @@ def get_connection():
 
 @current_app.teardown_appcontext
 def close_connection(exception):
-    conn = getattr(local, '_db_conn', None)
+    conn = getattr(g, '_db_conn', None)
     if conn is not None:
         conn.close()
 
