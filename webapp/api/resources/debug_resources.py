@@ -8,12 +8,19 @@ from webapp.api.oauth import oauth
 ns = api.namespace("debug_")
 
 def dictify(d, seen=None, depth=0):
+    try:
+        isinstance(d, object)
+    except:
+        return "can't call isinstance on this."
     seen = seen or []
-    if depth > 6:
-        return "maximum depth"
+    if isinstance(d, (basestring, int, float, bool, type(None),)):
+        return d
+    if depth > 4:
+        return {"@type": type(d), "@str": str(d), "m": True}
     seen.append(d)
 
     if isinstance(d, dict):
+        d = dict(d)
         for key in d:
             try:
                 d[key] = dictify(d[key], seen, depth+1)
@@ -21,16 +28,26 @@ def dictify(d, seen=None, depth=0):
                 d[key] = "Got an exception trying to get this item; %s" % e
         return d
     if isinstance(d, (list, tuple)):
-        d = list(d)
+        try:
+            d = list(d)
+        except:
+            return "Couldn't convert to list."
         for i in xrange(len(d)):
-            d[i] = dictify(d[i], seen, depth+1)
-        return d
-    if isinstance(d, (basestring, int, float, bool, type(None),)):
+            try:
+                d[i] = dictify(d[i], seen, depth+1)
+            except:
+                try:
+                    d[i] = "Couldn't get item %s." % i
+                except:
+                    return "Can't even assign an item to an index."
         return d
 
-    dd = dict(getattr(d, "__dict__", {}))
+    try:
+        dd = dict(getattr(d, "__dict__", {}))
+    except:
+        dd = {}
     for attr in dir(d):
-        if attr.startswith("__"):
+        if attr.startswith("__") or "func" in attr or "im_" in attr or attr in ["_meta", "resolve"]:
             continue
         try:
             dd[attr] = getattr(d, attr, "could not getattr.")
@@ -49,12 +66,7 @@ def dictify(d, seen=None, depth=0):
     except Exception as e:
         dd["@repr"] = "Got an exception trying to repr(): %s" % e
     res = dictify(dd, seen, depth+1)
-    import json
-    try:
-        json.dumps(res)
-        return res
-    except:
-        return str(res).encode("utf-8", "replace")
+    return res
 
 
 @ns.route("/test")

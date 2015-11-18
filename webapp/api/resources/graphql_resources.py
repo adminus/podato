@@ -5,6 +5,8 @@ from webapp.api.blueprint import api
 from webapp.api.oauth import oauth
 from webapp.api.graphql.schemas import schema
 
+from debug_resources import dictify
+
 ns = api.namespace("graphql")
 
 graphql_parser = api.parser()
@@ -17,4 +19,4 @@ class GraphqlResource(Resource):
     def post(self):
         valid, req = oauth.verify_request([])
         result = schema.execute(graphql_parser.parse_args()["query"])
-        return {"data": result.data, "errors": [str(e) for e in result.errors] if result.errors else None}
+        return {"data": result.data, "errors": [dictify(e) for e in result.errors] if result.errors else None}
