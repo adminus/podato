@@ -1,4 +1,5 @@
 import urllib
+import logging
 
 from flask import abort
 from flask_restplus import Resource
@@ -15,9 +16,9 @@ from webapp.podcasts import Podcast
 
 ns = api.namespace("podcasts")
 
-parser = api.parser()
-parser.add_argument(name="fetch", required=False, location="args", type=bool)
-parser.add_argument(name="maxEpisodes", required=False, location="args", type=int, default=30)
+podcast_parser = api.parser()
+podcast_parser.add_argument(name="fetch", required=False, location="args")
+podcast_parser.add_argument(name="maxEpisodes", required=False, location="args", type=int, default=30)
 
 @ns.route("/<path:podcastId>", endpoint="podcast")
 @api.doc(params={
@@ -28,10 +29,10 @@ parser.add_argument(name="maxEpisodes", required=False, location="args", type=in
 class PodcastResource(Resource):
     """Resource that represents a podcast."""
     @api.marshal_with(podcast_full_fields)
-    @api.doc(id="getPodcast", parser=parser)
+    @api.doc(id="getPodcast", parser=podcast_parser)
     def get(self, podcastId):
         """Get a podcast by id."""
-        args = parser.parse_args()
+        args = podcast_parser.parse_args()
         fetch = args.get("fetch")
         max_episodes = args.get("maxEpisodes")
         podcastId = urllib.unquote(podcastId)
@@ -45,9 +46,9 @@ class PodcastResource(Resource):
         podcast.ensure_episode_images()
         return podcast
 
-parser = api.parser()
-parser.add_argument(name="perPage", required=False, location="args", type=int)
-parser.add_argument(name="page", required=False, location="args", type=int)
+episode_parser = api.parser()
+episode_parser.add_argument(name="perPage", required=False, location="args", type=int)
+episode_parser.add_argument(name="page", required=False, location="args", type=int)
 
 @ns.route("/details/<path:podcastId>/episodes", endpoint="episodes")
 @api.doc(params={
@@ -59,9 +60,9 @@ class EpisodesResource(Resource):
     """Resource that represent a podcast's episodes"""
 
     @api.marshal_with(episode_list)
-    @api.doc(id="getEpisodes", parser=parser)
+    @api.doc(id="getEpisodes", parser=episode_parser)
     def get(self, podcastId):
-        args = parser.parse_args()
+        args = episode_parser.parse_args()
         return Podcast.get_episodes(podcastId, args.get("perPage"), args.get("page"))
 
 queryParser = api.parser()
