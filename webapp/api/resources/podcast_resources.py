@@ -65,21 +65,21 @@ class EpisodesResource(Resource):
         args = episode_parser.parse_args()
         return Podcast.get_episodes(podcastId, args.get("perPage"), args.get("page"))
 
-queryParser = api.parser()
-queryParser.add_argument(name="order", required=False, location="args", default="subscriptions")
-queryParser.add_argument(name="category", required=False, location="args")
-queryParser.add_argument(name="author", required=False, location="args")
-queryParser.add_argument(name="language", required=False, location="args")
-queryParser.add_argument(name="page", default=1, type=int)
-queryParser.add_argument(name="per_page", default=30, type=int)
+query_parser = api.parser()
+query_parser.add_argument(name="order", required=False, location="args", default="subscriptions")
+query_parser.add_argument(name="category", required=False, location="args")
+query_parser.add_argument(name="author", required=False, location="args")
+query_parser.add_argument(name="language", required=False, location="args")
+query_parser.add_argument(name="page", default=1, type=int)
+query_parser.add_argument(name="per_page", default=30, type=int)
 
 @ns.route("/")
 class PodcastQueryResource(Resource):
     """Resource representing the collection of al podcasts."""
 
     @api.marshal_with(podcast_fields, as_list=True)
-    @api.doc(id="query", parser=queryParser)
+    @api.doc(id="query", parser=query_parser)
     def get(self):
         """Query for podcasts."""
-        args = queryParser.parse_args()
+        args = query_parser.parse_args()
         return Podcast.query(**args)
