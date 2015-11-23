@@ -25,4 +25,4 @@ tweepy==3.3.0
 google-api-python-client==1.4.1
 rethinkdb
 cython
-gevent
+eventlet

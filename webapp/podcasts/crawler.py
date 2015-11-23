@@ -105,6 +105,7 @@ def _fetch_podcast_data(url):
 
 
 def _handle_error_response(response):
+    logging.info("Handling error %s" % dict(response))
     if response.previous:
         status = response.status
         urls = []
