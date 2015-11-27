@@ -29,11 +29,11 @@ const ImportButton = React.createClass({
             <Dialog isOpen={this.state.dialogOpen} title="Import podcasts" onRequestClose={this.toggleModal}>
                 <div className="px2">
                     <p>Export an OPML file from your podcast app. More info on how to do this will be added here soon.</p>
-                    <p>
+                    <div>
                         <label htmlFor="opmlFile">Select an OPML file.</label>
                         <input type="file" name="opmlFile" id="opmlFile" className="field" onChange={this.onFileChange}/>
                         {this.state.podcasts ? <CheckboxList ref="checklist" data={this.state.podcasts}/> : null}
-                    </p>
+                    </div>
                     <p><a className="button bg-red white" onClick={this.onDone}>Done</a></p>
                 </div>
             </Dialog>
@@ -59,14 +59,11 @@ const ImportButton = React.createClass({
     onFileChange(e){
         var file = e.target.files[0];
         var reader = new FileReader();
-        if(file.type !== "text/x-opml"){
-            //TOO present some kind of error message.
-            return;
-        }
         reader.onload = this.onFileLoaded;
         reader.readAsText(file);
     },
     onFileLoaded(e){
+        console.log("parsing opml...");
         var doc = parseXML(e.target.result);
         var outlines = doc.querySelectorAll("outline");
         var podcasts = [];
